@@ -1,0 +1,42 @@
+{
+  "name": "server4test",
+  "description": "server for test",
+  "version": "0.1.0",
+  "files": [
+    "lib"
+  ],
+  "author": "Codenautas <codenautas@googlegroups.com>",
+  "repository": "codenautas/server4test",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Emilio Platzer",
+      "email": "emilioplatzer@gmail.com"
+    }
+  ],
+  "main": "server4test.js",
+  "dependencies": {
+    "express": "~4.16.2",
+    "best-globals": "~0.10.4",
+    "serve-content": "~0.3.9"
+  },
+  "devDependencies": {
+  },
+  "engines": {
+    "node": ">= 8"
+  },
+  "scripts": {
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
+    "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
+    "test-h": "node server/pdemo-server.js --use-casper --coverage --hold",
+    "start": "node example/server.js"
+  },
+  "qa-control": {
+    "package-version": "0.3.0",
+    "coverage": 0,
+    "run-in": "client",
+    "stability": "extending",
+    "type": "lib"
+  }
+}
