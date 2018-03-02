@@ -1,8 +1,6 @@
-"use strict";
-
-var express = require('express');
-var MiniTools = require('mini-tools');
-var serveContent = require('serve-content');
+import * as express      from 'express';
+import * as MiniTools    from 'mini-tools';
+import * as serveContent from 'serve-content';
 
 class Server{
     constructor(opts){
@@ -27,9 +25,6 @@ class Server{
                 if(err){
                     reject(err);
                 }else{
-                    if(server.opts.verbose){
-                        console.log("Listening at",server.port);
-                    }
                     resolve();
                 }
             });
@@ -43,9 +38,6 @@ class Server{
         return new Promise(function(resolve,reject){
             try{
                 server.listener.close(function(err){
-                    if(server.opts.verbose){
-                        console.log("server closed")
-                    }
                     if(err){
                         reject(err);
                     }else{

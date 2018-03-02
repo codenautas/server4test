@@ -16,12 +16,12 @@
   ],
   "main": "server4test.js",
   "dependencies": {
+    "@types/node": "~9.3.0",
     "express": "~4.16.2",
     "best-globals": "~0.10.4",
     "serve-content": "~0.3.9"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "engines": {
     "node": ">= 8"
   },
@@ -30,7 +30,7 @@
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-h": "node server/pdemo-server.js --use-casper --coverage --hold",
-    "start": "node example/server.js"
+    "example-js": "node example/example-server.js"
   },
   "qa-control": {
     "package-version": "0.3.0",
