@@ -1,10 +1,8 @@
-"use script";
+import {Server4Test} from "../src/server4test";
 
-let Server4test = require("../server4test.js");
-
-class ExampleServer extends Server4test{
+class ExampleServer extends Server4Test{
     directServices(){
-        return [].concat([
+        return super.directServices().concat([
             {path:'/dummy1' , html:'dummy 1'},
             {path:'/up-time', html:new Date().toString()},
         ])
@@ -14,5 +12,5 @@ class ExampleServer extends Server4test{
 var server = new ExampleServer({port:3339, verbose:true});
 
 server.start().then(function(){
-    console.log('try: http://localhost:3339/example/example.js.html');
+    console.log('try: http://localhost:3339/example/example.html');
 });
