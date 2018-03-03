@@ -7,10 +7,12 @@
         "sourceMap": true,
         "typeRoots": [
           "./node_modules/@types"
-        ]
+        ],
+        "moduleResolution": "node",
+        "lib": [ "es2015" ]
     },
     "include": [
-        "./lib/*",
+        "./src/*",
         "./example/*"
     ],
 }

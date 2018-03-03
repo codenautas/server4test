@@ -17,6 +17,7 @@
   "main": "server4test.js",
   "dependencies": {
     "@types/node": "~9.3.0",
+    "@types/express": "~4.11.1",
     "express": "~4.16.2",
     "best-globals": "~0.10.4",
     "serve-content": "~0.3.9"

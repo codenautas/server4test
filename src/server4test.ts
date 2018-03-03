@@ -2,8 +2,8 @@ import * as express      from 'express';
 import * as MiniTools    from 'mini-tools';
 import * as serveContent from 'serve-content';
 
-class Server{
-    app:any;
+export class Server4Test{
+    app:express.Express;
     opts:{port:number, verbose?:boolean};
     port:number;
     listener:any;
@@ -11,7 +11,7 @@ class Server{
         this.app = express();
         this.opts = opts;
     }
-    async start(){
+    async start(): Promise<void>{
         var server = this;
         var baseUrl = '';
         var optsGenericForFiles={
@@ -24,7 +24,7 @@ class Server{
             });
         });
         server.app.use(baseUrl+'/',serveContent(process.cwd(),optsGenericForFiles));
-        return new Promise(function(resolve, reject){
+        await new Promise(function(resolve, reject){
             server.listener = server.app.listen(server.port, function(err){
                 if(err){
                     reject(err);
@@ -34,12 +34,12 @@ class Server{
             });
         });
     }
-    directServices(){
+    directServices():Array<{path:string, html:string}>{
         return [];
     }
-    closeServer(){
+    async closeServer():Promise<void>{
         var server = this;
-        return new Promise(function(resolve,reject){
+        await new Promise(function(resolve,reject){
             try{
                 server.listener.close(function(err){
                     if(err){
@@ -54,5 +54,3 @@ class Server{
         });
     }
 }
-
-module.exports = Server;
