@@ -3,6 +3,9 @@
 let Server4test = require("../server4test.js");
 
 class ExampleServer extends Server4test{
+    constructor(opts){
+        super(opts)
+    }
     directServices(){
         return [].concat([
             {path:'/dummy1' , html:'dummy 1'},

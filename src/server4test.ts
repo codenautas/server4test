@@ -3,11 +3,15 @@ import * as MiniTools    from 'mini-tools';
 import * as serveContent from 'serve-content';
 
 class Server{
-    constructor(opts){
+    app:any;
+    opts:{port:number, verbose?:boolean};
+    port:number;
+    listener:any;
+    constructor(opts:{port:number, verbose?:boolean}){
         this.app = express();
         this.opts = opts;
     }
-    start(){
+    async start(){
         var server = this;
         var baseUrl = '';
         var optsGenericForFiles={

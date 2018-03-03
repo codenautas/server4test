@@ -1,8 +1,5 @@
-<h1>Example server4text</h1>
-<img src="server-ok.png">
-<p>dummy <span id=dummy></span>
-<p>up-time <span id="up-time"></span>
-<script>
+"use strict";
+
 function fetchAndShow(url, id){
     var element = document.getElementById(id);
     fetch(url).then(function(response){
@@ -20,4 +17,3 @@ window.addEventListener('load', function(){
     fetchAndShow('/dummy1','dummy');
     fetchAndShow('/up-time','up-time');
 });
-</script>
