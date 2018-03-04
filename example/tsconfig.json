@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "outDir": "./local-built"
+    },
+    "files":[
+        "example-server.ts"
+    ],
+    "extends": "../tsconfig.json"
+}

@@ -1,18 +1,14 @@
 {
     "compilerOptions": {
-        "outDir": "./built",
-        "allowJs": true,
+        "declaration": true,
+        "outDir": "lib",
         "module": "UMD",
         "target": "es5",
         "sourceMap": true,
-        "typeRoots": [
-          "./node_modules/@types"
-        ],
         "moduleResolution": "node",
         "lib": [ "es2015" ]
     },
     "files":[
-        "src/server4test.ts",
-        "example/example-server.ts"
+        "src/server4test.ts"
     ]
 }
