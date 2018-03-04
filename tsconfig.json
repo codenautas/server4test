@@ -2,8 +2,8 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "lib",
-        "module": "UMD",
-        "target": "es5",
+        "module": "none",
+        "target": "es2017",
         "sourceMap": true,
         "moduleResolution": "node",
         "lib": [ "es2015" ]

@@ -1,9 +1,15 @@
 {
     "compilerOptions": {
-        "outDir": "./local-built"
+        "outDir": "./local-built",
+        "lib":["es2015", "dom"],
+        "typeRoots" : [
+            "./node_modules/@types/"
+        ]
     },
     "files":[
-        "example-server.ts"
+        "example-server.ts",
+        "client.ts"
     ],
-    "extends": "../tsconfig.json"
+    "extends": "../tsconfig.json",
+    "other": "./node_modules/require-bro/types/"
 }
