@@ -27,6 +27,9 @@ class Server{
                 if(err){
                     reject(err);
                 }else{
+                    if(server.opts.verbose){
+                        console.log("Listening at",server.port);
+                    }
                     resolve();
                 }
             });
@@ -40,6 +43,9 @@ class Server{
         return new Promise(function(resolve,reject){
             try{
                 server.listener.close(function(err){
+                    if(server.opts.verbose){
+                        console.log("server closed")
+                    }
                     if(err){
                         reject(err);
                     }else{
