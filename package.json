@@ -18,18 +18,20 @@
   "main": "lib/server4test.js",
   "types": "lib/server4test.d.ts",
   "dependencies": {
-    "@types/node": "~9.4.6",
-    "@types/express": "~4.11.1",
-    "express": "~4.16.2",
-    "typescript": "~2.7.2",
-    "best-globals": "~0.10.4",
+    "@types/node": "~10.5.2",
+    "@types/express": "~4.16.0",
+    "express": "~4.16.3",
+    "typescript": "~2.9.2",
+    "best-globals": "~0.10.5",
+    "mini-tools": "~1.0.2",
     "serve-content": "~0.3.9"
   },
   "devDependencies": {
     "es5-shim": "~4.5.10",
-    "whatwg-fetch": "~2.0.3",
     "fetch-ie8": "~1.5.0",
-    "require-bro": "~0.1.10"
+    "whatwg-fetch": "~2.0.4",
+    "require-bro": "~0.1.11",
+    "types.d.ts": "~0.1.30"
   },
   "engines": {
     "node": ">= 8"

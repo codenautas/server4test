@@ -5,6 +5,9 @@
         "module": "none",
         "target": "es2017",
         "sourceMap": true,
+        "typeRoots" : ["node_modules/@types", "node_modules/types.d.ts/modules"],
+        "alwaysStrict": true,
+        "noImplicitAny": true,
         "moduleResolution": "node",
         "lib": [ "es2015" ]
     },

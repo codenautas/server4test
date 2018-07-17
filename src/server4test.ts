@@ -2,12 +2,17 @@ import * as express      from 'express';
 import * as MiniTools    from 'mini-tools';
 import * as serveContent from 'serve-content';
 
+export type Server4TestOpts={
+    port:number, 
+    verbose?:boolean
+}
+
 export class Server4Test{
     app:express.Express;
-    opts:{port:number, verbose?:boolean};
+    opts:Server4TestOpts;
     port:number;
     listener:any;
-    constructor(opts:{port:number, verbose?:boolean}){
+    constructor(opts:Server4TestOpts){
         this.app = express();
         this.opts = opts;
     }
