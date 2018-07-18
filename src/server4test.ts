@@ -1,10 +1,12 @@
 import * as express      from 'express';
 import * as MiniTools    from 'mini-tools';
 import * as serveContent from 'serve-content';
+import * as bestGlobals  from 'best-globals';
 
 export type Server4TestOpts={
     port:number, 
-    verbose?:boolean
+    verbose?:boolean,
+    "serve-content"?:serveContent.serveContentOptions
 }
 
 export class Server4Test{
@@ -19,18 +21,18 @@ export class Server4Test{
     async start(): Promise<void>{
         var server = this;
         var baseUrl = '';
-        var optsGenericForFiles={
+        var optsGenericForFiles=bestGlobals.changing({
             allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache']
-        }
+        },this.opts["serve-content"]||{});
         server.port = this.opts.port;
         this.directServices().map(function(serviceDef){
             server.app.use(serviceDef.path, function(req, res, next){
-                MiniTools.serveText(serviceDef.html,'html')(req,res,next);
+                MiniTools.serveText(serviceDef.html,'html')(req,res);
             });
         });
         server.app.use(baseUrl+'/',serveContent(process.cwd(),optsGenericForFiles));
         await new Promise(function(resolve, reject){
-            server.listener = server.app.listen(server.port, function(err){
+            server.listener = server.app.listen(server.port, function(err:Error){
                 if(err){
                     reject(err);
                 }else{
@@ -46,7 +48,7 @@ export class Server4Test{
         var server = this;
         await new Promise(function(resolve,reject){
             try{
-                server.listener.close(function(err){
+                server.listener.close(function(err:Error){
                     if(err){
                         reject(err);
                     }else{

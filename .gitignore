@@ -60,4 +60,5 @@ typings/
 local-*
 *-local.*
 
+lib
 package-lock.json

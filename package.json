@@ -18,12 +18,14 @@
   "main": "lib/server4test.js",
   "types": "lib/server4test.d.ts",
   "dependencies": {
-    "@types/node": "~10.5.2",
     "@types/express": "~4.16.0",
+    "@types/node": "~10.5.2",
+    "@types/serve-index": "~1.7.29",
     "express": "~4.16.3",
+    "serve-index": "~1.9.1",
     "typescript": "~2.9.2",
     "best-globals": "~0.10.5",
-    "mini-tools": "~1.0.2",
+    "mini-tools": "~1.0.3",
     "serve-content": "~0.3.9"
   },
   "devDependencies": {
@@ -37,13 +39,14 @@
     "node": ">= 8"
   },
   "scripts": {
+    "start": "node server/launch4test.js",
     "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-h": "node server/pdemo-server.js --use-casper --coverage --hold",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
     "prepare": "tsc",
-    "prepublishOnly": "tsc"
+    "prepublish": "tsc"
   },
   "qa-control": {
     "package-version": "0.3.0",
