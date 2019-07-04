@@ -12,7 +12,9 @@ async function  launch(){
                 port: 8080,
                 verbose: true,
                 "serve-content":{
-                    allowAllExts:true
+                    allowAllExts:true,
+                    ".jade":{extOriginal:"jade"},
+                    ".styl":{extOriginal:"styl"},
                 },
             },
             "serve-directory":true,
@@ -25,7 +27,6 @@ async function  launch(){
     server.start();
     server.app.use('/', serveIndex(config["base-dir"],{icons: true, view:'details'}));
     console.log('server listening at',server.port);
-    console.log(server);
 }
 
 launch();

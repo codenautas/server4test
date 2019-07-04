@@ -1,7 +1,7 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "files": [
     "lib"
   ],
@@ -38,7 +38,7 @@
     "node": ">= 8"
   },
   "scripts": {
-    "start": "node server/launch4test.js",
+    "start": "node server/lib/launch4test.js",
     "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",

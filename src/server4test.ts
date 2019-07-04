@@ -1,13 +1,17 @@
 import * as express      from 'express';
 import * as MiniTools    from 'mini-tools';
 import * as serveContent from 'serve-content';
-import * as bestGlobals  from 'best-globals';
+import {changing}  from 'best-globals';
 
 export type Server4TestOpts={
     port:number, 
     verbose?:boolean,
+    devel?:boolean,
     "serve-content"?:serveContent.serveContentOptions
 }
+
+serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'.jade'});
+serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'.styl'});
 
 export class Server4Test{
     app:express.Express;
@@ -21,8 +25,8 @@ export class Server4Test{
     async start(): Promise<void>{
         var server = this;
         var baseUrl = '';
-        var optsGenericForFiles=bestGlobals.changing({
-            allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache']
+        var optsGenericForFiles=changing({
+            allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache', 'jade', 'styl']
         },this.opts["serve-content"]||{});
         server.port = this.opts.port;
         this.directServices().map(function(serviceDef){
@@ -30,6 +34,9 @@ export class Server4Test{
                 MiniTools.serveText(serviceDef.html,'html')(req,res);
             });
         });
+        if(this.opts.devel){
+            server.app.use()
+        }
         server.app.use(baseUrl+'/',serveContent(process.cwd(),optsGenericForFiles));
         await new Promise(function(resolve, reject){
             server.listener = server.app.listen(server.port, function(err:Error){
