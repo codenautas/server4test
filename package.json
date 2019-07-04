@@ -1,10 +1,9 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "author": "Codenautas <codenautas@googlegroups.com>",
   "repository": "codenautas/server4test",
@@ -45,8 +44,7 @@
     "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-h": "node server/pdemo-server.js --use-casper --coverage --hold",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
-    "prepare": "tsc",
-    "prepublish": "tsc"
+    "prepare": "tsc || echo 'prepare with errors'"
   },
   "qa-control": {
     "package-version": "0.3.0",
