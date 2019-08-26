@@ -1,7 +1,9 @@
 import * as express      from 'express';
-import * as MiniTools    from 'mini-tools';
+import * as MiniTools    from "mini-tools";
 import * as serveContent from 'serve-content';
-import {changing}  from 'best-globals';
+import {changing}        from 'best-globals';
+import { existsSync }    from 'fs';
+import * as Path         from 'path';
 
 export type Server4TestOpts={
     port:number, 
@@ -12,6 +14,8 @@ export type Server4TestOpts={
 
 serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'.jade'});
 serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'.styl'});
+
+export type ServiceDef = {path:string, html:string}|{path:string, middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>any};
 
 export class Server4Test{
     app:express.Express;
@@ -29,10 +33,16 @@ export class Server4Test{
             allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache', 'jade', 'styl']
         },this.opts["serve-content"]||{});
         server.port = this.opts.port;
-        this.directServices().map(function(serviceDef){
-            server.app.use(serviceDef.path, function(req, res, next){
+        this.directServices().forEach(function(serviceDef){
+            var middleware = 'middleware' in serviceDef?serviceDef.middleware:function(req:express.Request, res:express.Response){
                 MiniTools.serveText(serviceDef.html,'html')(req,res);
-            });
+            };
+            if(serviceDef.path){
+                server.app.use(serviceDef.path, middleware);
+            }else{
+                server.app.use(middleware);
+                server.app.use('/',middleware);
+            }
         });
         if(this.opts.devel){
             server.app.use()
@@ -48,8 +58,28 @@ export class Server4Test{
             });
         });
     }
-    directServices():Array<{path:string, html:string}>{
-        return [];
+    webPackService(webPackOptions:any, webpackDevMiddlewareOptions?:any){
+        const webpack = require('webpack');
+        const middleware = require('webpack-dev-middleware');
+        const compiler = webpack(webPackOptions||{
+        // webpack options
+        });
+        const express = require('express');
+        const app = express();
+        return middleware(compiler, webpackDevMiddlewareOptions||{
+            publicPath:'/dist',
+            headers: { "X-Custom-Header": "yes" }
+            // webpack-dev-middleware options
+        })
+    }
+    directServices():Array<ServiceDef>{
+        var services = [];
+        if(existsSync('./webpack.config.js')){
+            console.log('using webpack.config.js')
+            var options = require(Path.resolve('./webpack.config.js'));
+            services.push({path:'', middleware:this.webPackService(options)})
+        }
+        return services;
     }
     async closeServer():Promise<void>{
         var server = this;

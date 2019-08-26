@@ -1,4 +1,4 @@
-"use strict";
+"#!/usr/bin/env node";
 
 import {Server4Test, Server4TestOpts} from "./server4test";
 import * as serveIndex from 'serve-index';

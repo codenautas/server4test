@@ -1,7 +1,7 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "files": [
     "lib"
   ],
@@ -16,23 +16,29 @@
   ],
   "main": "lib/server4test.js",
   "types": "lib/server4test.d.ts",
+  "bin": {
+    "server4test": "./lib/launch4test"
+  },
   "dependencies": {
-    "@types/express": "~4.16.0",
-    "@types/node": "~10.5.2",
-    "@types/serve-index": "~1.7.29",
-    "express": "~4.16.3",
+    "@types/express": "~4.17.1",
+    "@types/node": "~12.7.2",
+    "@types/serve-index": "~1.7.30",
+    "express": "~4.17.1",
     "serve-index": "~1.9.1",
-    "typescript": "~2.9.2",
-    "best-globals": "~0.10.5",
-    "mini-tools": "~1.0.3",
-    "serve-content": "~0.3.9"
+    "typescript": "~3.5.3",
+    "webpack": "~4.39.2",
+    "webpack-dev-middleware": "~3.7.0",
+    "best-globals": "~0.10.22",
+    "mini-tools": "~1.0.9",
+    "serve-content": "~0.3.11"
   },
   "devDependencies": {
-    "es5-shim": "~4.5.10",
+    "es5-shim": "~4.5.13",
     "fetch-ie8": "~1.5.0",
-    "whatwg-fetch": "~2.0.4",
-    "require-bro": "~0.1.11",
-    "types.d.ts": "~0.1.30"
+    "whatwg-fetch": "~3.0.0",
+    "require-bro": "~0.1.13",
+    "types.d.ts": "~0.4.8",
+    "mixin-patch": "~0.3.1"
   },
   "engines": {
     "node": ">= 8"
@@ -44,7 +50,7 @@
     "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-h": "node server/pdemo-server.js --use-casper --coverage --hold",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
-    "prepare": "tsc || echo 'prepare with errors'"
+    "prepare": "(tsc || echo 'prepare with errors') && mixin-patch"
   },
   "qa-control": {
     "package-version": "0.3.0",
