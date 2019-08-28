@@ -5,7 +5,7 @@ import * as serveIndex from 'serve-index';
 import * as MiniTools from 'mini-tools';
 
 
-async function  launch(){
+async function launch(){
     var config = await MiniTools.readConfig([
         {
             server:{
@@ -24,7 +24,7 @@ async function  launch(){
     ], {whenNotExist: 'ignore'});
     var x:Server4TestOpts = config.server;
     var server= new Server4Test(config.server);
-    server.start();
+    await server.start();
     server.app.use('/', serveIndex(config["base-dir"],{icons: true, view:'details'}));
     console.log('server listening at',server.port);
 }
