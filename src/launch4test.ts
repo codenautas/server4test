@@ -4,19 +4,38 @@ import {Server4Test, Server4TestOpts} from "./server4test";
 import * as serveIndex from 'serve-index';
 import * as MiniTools from 'mini-tools';
 
+const CONFIG_DEFAULT:Server4TestOpts={
+    port: 8080,
+    verbose: true,
+    "serve-content":{
+        allowAllExts:true,
+        /*
+        ".jade":{extOriginal:"jade"},
+        ".styl":{extOriginal:"styl"},
+        */
+    },
+    "local-file-repo":{
+        enabled: false,
+        directory: "local-file-repo",
+        readRequest:{
+            method:'get',
+            path:'/file-read'
+        },
+        writeRequest:{
+            method:'get',
+            path:'/file-write'
+        },
+        deleteRequest:{
+            method:'get',
+            path:'/file-delete'
+        }
+    }
+};
 
 async function launch(){
     var config = await MiniTools.readConfig([
         {
-            server4test:{
-                port: 8080,
-                verbose: true,
-                "serve-content":{
-                    allowAllExts:true,
-                    ".jade":{extOriginal:"jade"},
-                    ".styl":{extOriginal:"styl"},
-                },
-            },
+            server4test:CONFIG_DEFAULT,
             "server4test-directory":true,
             "server4test-base-dir":process.cwd()
         },
@@ -32,7 +51,7 @@ async function launch(){
     console.log('server listening at',server.port);
     if(config.server4test.verbose){
         console.log('server4test-config');
-        console.log(config);
+        console.dir(config, {depth:6});
     }
 }
 

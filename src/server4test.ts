@@ -1,21 +1,42 @@
 import * as express      from 'express';
 import * as MiniTools    from "mini-tools";
 import * as serveContent from 'serve-content';
-import {changing}        from 'best-globals';
+import {changing, sleep}        from 'best-globals';
+import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
+import { Request, Response } from 'express';
+
+type RequestDefinition = {
+    method:'get'|'post'|'put'|'delete'|'use',
+    path:string
+};
 
 export type Server4TestOpts={
     port:number, 
     verbose?:boolean,
     devel?:boolean,
-    "serve-content"?:serveContent.serveContentOptions
+    "serve-content"?:serveContent.serveContentOptions,
+    "local-file-repo":{
+        enabled: boolean,
+        delay: number,
+        directory:string,
+        readRequest:RequestDefinition,
+        writeRequest:RequestDefinition
+        deleteRequest:RequestDefinition
+    }
 }
 
 serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'.jade'});
 serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'.styl'});
 
-export type ServiceDef = {path:string, html:string}|{path:string, middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>any};
+export type ServiceDef = {
+    path:string, 
+    method?:'get'|'post'|'delete'|'put'|'use'
+} & (
+    {html:string}|
+    {middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>any}
+);
 
 export class Server4Test{
     app:express.Express;
@@ -37,11 +58,14 @@ export class Server4Test{
             var middleware = 'middleware' in serviceDef?serviceDef.middleware:function(req:express.Request, res:express.Response){
                 MiniTools.serveText(serviceDef.html,'html')(req,res);
             };
+            var method = serviceDef.method||'use'
             if(serviceDef.path){
-                server.app.use(serviceDef.path, middleware);
+                server.app[method](serviceDef.path, middleware);
             }else{
-                server.app.use(middleware);
-                server.app.use('/',middleware);
+                if(method=='use'){
+                    server.app[method](middleware);
+                }
+                server.app[method]('/',middleware);
             }
         });
         if(this.opts.devel){
@@ -72,12 +96,51 @@ export class Server4Test{
             // webpack-dev-middleware options
         })
     }
+    localFileRepoMiddleware(fun:(filename:string, params?:{content:string})=>Promise<{content?:string, timestamp?:number}>){
+        return async (req:Request, res:Response)=>{
+            try{
+                await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
+                var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
+                var result = await fun(filename,req.query);
+                var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
+                await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
+                res.send(JSON.stringify(data));
+                res.end();
+            }catch(err){
+                console.log(req.path, req.query, err);
+                res.statusCode=502;
+                res.send('server error');
+                res.end();
+            }
+        };
+    }
+    fileServices(){
+        fs.ensureDir(this.opts["local-file-repo"].directory);
+        return [
+            {...this.opts["local-file-repo"].readRequest, middleware:this.localFileRepoMiddleware(async (filename:string)=>{
+                var content = await fs.readFile(filename, 'utf8')
+                return {content};
+            })},
+            {...this.opts["local-file-repo"].writeRequest, middleware:this.localFileRepoMiddleware(async (filename:string, {content})=>{
+                await fs.writeFile(filename, content, 'utf8')
+                return {};
+            })},
+            {...this.opts["local-file-repo"].writeRequest, middleware:this.localFileRepoMiddleware(async (filename:string)=>{
+                await fs.remove(filename)
+                return {timestamp:new Date().getTime()};
+            })},
+        ]
+    }
     directServices():Array<ServiceDef>{
         var services = [];
         if(existsSync('./webpack.config.js')){
             console.log('using webpack.config.js')
             var options = require(Path.resolve('./webpack.config.js'));
             services.push({path:'', middleware:this.webPackService(options)})
+        }
+        if(this.opts["local-file-repo"].enabled){
+            services = {...services, ...this.fileServices()}
+            console.log('services', services)
         }
         return services;
     }
