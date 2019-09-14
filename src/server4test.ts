@@ -96,7 +96,9 @@ export class Server4Test{
             // webpack-dev-middleware options
         })
     }
-    localFileRepoMiddleware(fun:(filename:string, params?:{content:string})=>Promise<{content?:string, timestamp?:number}>){
+    localFileRepoMiddleware(
+        fun:(filename:string, params?:{content:string})=>Promise<{content?:string, timestamp?:number}>
+    ){
         return async (req:Request, res:Response)=>{
             try{
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
@@ -108,14 +110,22 @@ export class Server4Test{
                 res.end();
             }catch(err){
                 console.log(req.path, req.query, err);
-                res.statusCode=502;
+                res.statusCode=err.code=='ENOENT'?404:502;
                 res.send('server error');
                 res.end();
             }
         };
     }
+    async launchEnsureDirOrDie(){
+        try{
+            await fs.ensureDir(this.opts["local-file-repo"].directory);
+        }catch(err){
+            console.log("Can't ensureDir",this.opts["local-file-repo"].directory);
+            process.exit(1);
+        }
+    }
     fileServices(){
-        fs.ensureDir(this.opts["local-file-repo"].directory);
+        this.launchEnsureDirOrDie();
         return [
             {...this.opts["local-file-repo"].readRequest, middleware:this.localFileRepoMiddleware(async (filename:string)=>{
                 var content = await fs.readFile(filename, 'utf8')
@@ -132,14 +142,14 @@ export class Server4Test{
         ]
     }
     directServices():Array<ServiceDef>{
-        var services = [];
+        var services:ServiceDef[] = [];
         if(existsSync('./webpack.config.js')){
             console.log('using webpack.config.js')
             var options = require(Path.resolve('./webpack.config.js'));
             services.push({path:'', middleware:this.webPackService(options)})
         }
         if(this.opts["local-file-repo"].enabled){
-            services = {...services, ...this.fileServices()}
+            services = [...services, ...this.fileServices()];
             console.log('services', services)
         }
         return services;

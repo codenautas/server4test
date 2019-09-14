@@ -16,6 +16,7 @@ const CONFIG_DEFAULT:Server4TestOpts={
     },
     "local-file-repo":{
         enabled: false,
+        delay:200, 
         directory: "local-file-repo",
         readRequest:{
             method:'get',
