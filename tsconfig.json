@@ -9,6 +9,7 @@
         "alwaysStrict": true,
         "noImplicitAny": true,
         "moduleResolution": "node",
+        "skipLibCheck": true,
         "lib": [ "es2015" ]
     },
     "include":[

@@ -6,11 +6,12 @@
         "module": "umd",
         "typeRoots" : [
             "./node_modules/@types/"
-        ]
+        ],
+        "strict": true,
+        "noImplicitAny": true,
+        "checkJs": true,
     },
     "files":[
-        "example-server.ts",
-        "client.ts"
     ],
     "extends": "../tsconfig.json",
     "other": "./node_modules/require-bro/types/"

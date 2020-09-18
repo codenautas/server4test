@@ -106,7 +106,7 @@ export class Server4Test{
             try{
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
-                var result = await fun(filename,req.query);
+                var result = await fun(filename,req.query,{content:req.query.content});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 res.send(JSON.stringify(data));
@@ -135,7 +135,7 @@ export class Server4Test{
                 return {content};
             })},
             {...this.opts["local-file-repo"].writeRequest, middleware:this.localFileRepoMiddleware(async (filename:string, {content})=>{
-                await fs.writeFile(filename, JSON.parse(content), 'utf8')
+                await fs.writeFile(filename, content, 'utf8')
                 return {};
             })},
             {...this.opts["local-file-repo"].deleteRequest, middleware:this.localFileRepoMiddleware(async (filename:string)=>{

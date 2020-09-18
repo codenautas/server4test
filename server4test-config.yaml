@@ -1,0 +1,4 @@
+server4test:
+  local-file-repo:
+    enabled: true
+    directory: ./local-file-store
