@@ -1,7 +1,8 @@
 import * as express      from 'express';
 import * as MiniTools    from "mini-tools";
 import * as serveContent from 'serve-content';
-import {changing, sleep}        from 'best-globals';
+import * as serveIndex   from 'serve-index';
+import {changing, sleep} from 'best-globals';
 import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
@@ -17,6 +18,8 @@ export type Server4TestOpts={
     verbose?:boolean,
     devel?:boolean,
     "serve-content"?:serveContent.serveContentOptions,
+    "public-dir"?:string|[string]
+    "server4test-directory"?:boolean
     "local-file-repo":{
         enabled: boolean,
         delay: number,
@@ -71,7 +74,14 @@ export class Server4Test{
         if(this.opts.devel){
             server.app.use()
         }
-        server.app.use(baseUrl+'/',serveContent(process.cwd(),optsGenericForFiles));
+        var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"];
+        paths.forEach((path, i)=>{
+            console.log('path->',path)
+            if(this.opts["server4test-directory"] && !i){
+                server.app.use(baseUrl+'/', serveIndex(path,{icons: true, view:'details'}));
+            }
+            server.app.use(baseUrl+'/',serveContent(path,optsGenericForFiles));
+        })
         await new Promise(function(resolve, reject){
             server.listener = server.app.listen(server.port, function(err:Error){
                 if(err){

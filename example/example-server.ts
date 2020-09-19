@@ -1,6 +1,9 @@
-import {Server4Test} from "../src/server4test";
+import {Server4Test, Server4TestOpts} from "../src/server4test";
 
 class ExampleServer extends Server4Test{
+    constructor(opts:Partial<Server4TestOpts>){
+        super(opts)
+    }
     directServices(){
         return super.directServices().concat([
             {path:'/dummy1' , html:'dummy 1'},
