@@ -12,14 +12,45 @@ type RequestDefinition = {
     method:'get'|'post'|'put'|'delete'|'use',
     path:string
 };
+const CONFIG_DEFAULT:Server4TestOpts={
+    port: 8080,
+    verbose: true,
+    "serve-content":{
+        allowAllExts:true,
+        /*
+        ".jade":{extOriginal:"jade"},
+        ".styl":{extOriginal:"styl"},
+        */
+    },
+    "base-url":'',
+    "server4test-directory":false,
+    "local-file-repo":{
+        enabled: false,
+        delay:200, 
+        directory: "local-file-repo",
+        readRequest:{
+            method:'get',
+            path:'/file-read'
+        },
+        writeRequest:{
+            method:'get',
+            path:'/file-write'
+        },
+        deleteRequest:{
+            method:'get',
+            path:'/file-delete'
+        }
+    }
+};
 
 export type Server4TestOpts={
     port:number, 
-    verbose?:boolean,
+    verbose:boolean,
     devel?:boolean,
-    "serve-content"?:serveContent.serveContentOptions,
+    "base-url":string,
+    "serve-content":serveContent.serveContentOptions,
     "public-dir"?:string|[string]
-    "server4test-directory"?:boolean
+    "server4test-directory":boolean
     "local-file-repo":{
         enabled: boolean,
         delay: number,
@@ -46,13 +77,13 @@ export class Server4Test{
     opts:Server4TestOpts;
     port:number;
     listener:any;
-    constructor(opts:Server4TestOpts){
+    constructor(opts:Partial<Server4TestOpts>){
         this.app = express();
-        this.opts = opts;
+        this.opts = {...CONFIG_DEFAULT, ...opts};
     }
     async start(): Promise<void>{
         var server = this;
-        var baseUrl = '';
+        var baseUrl = this.opts["base-url"];
         var optsGenericForFiles=changing({
             allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache', 'jade', 'styl']
         },this.opts["serve-content"]||{});
@@ -63,12 +94,12 @@ export class Server4Test{
             };
             var method = serviceDef.method||'use'
             if(serviceDef.path){
-                server.app[method](serviceDef.path, middleware);
+                server.app[method](baseUrl+'/'+serviceDef.path, middleware);
             }else{
                 if(method=='use'){
                     server.app[method](middleware);
                 }
-                server.app[method]('/',middleware);
+                server.app[method](baseUrl+'/',middleware);
             }
         });
         if(this.opts.devel){
@@ -82,14 +113,8 @@ export class Server4Test{
             }
             server.app.use(baseUrl+'/',serveContent(path,optsGenericForFiles));
         })
-        await new Promise(function(resolve, reject){
-            server.listener = server.app.listen(server.port, function(err:Error){
-                if(err){
-                    reject(err);
-                }else{
-                    resolve();
-                }
-            });
+        await new Promise(function(resolve, _reject){
+            server.listener = server.app.listen(server.port, resolve);
         });
     }
     webPackService(webPackOptions:any, webpackDevMiddlewareOptions?:any){
@@ -115,8 +140,9 @@ export class Server4Test{
             }
             try{
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
+                if(typeof req.query.file !== "string") throw new Error('lack of filename');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
-                var result = await fun(filename,req.query,{content:req.query.content});
+                var result = await fun(filename,{content:req.query.content?.toString()});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 res.send(JSON.stringify(data));

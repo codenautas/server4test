@@ -22,7 +22,7 @@
   "dependencies": {
     "@types/express": "~4.17.8",
     "@types/fs-extra": "~9.0.1",
-    "@types/node": "~14.11.1",
+    "@types/node": "~14.11.2",
     "@types/serve-index": "~1.7.30",
     "express": "~4.17.1",
     "fs-extra": "9.0.1",

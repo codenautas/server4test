@@ -9,6 +9,7 @@
         ],
         "strict": true,
         "noImplicitAny": true,
+        "allowJs": true,
         "checkJs": true,
     },
     "files":[

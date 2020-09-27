@@ -2,7 +2,7 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "lib",
-        "module": "none",
+        "module": "umd",
         "target": "es2017",
         "sourceMap": true,
         "typeRoots" : ["node_modules/@types", "node_modules/types.d.ts/modules"],
