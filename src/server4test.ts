@@ -1,4 +1,5 @@
 import * as express      from 'express';
+import * as cookieParser from 'cookie-parser';
 import * as MiniTools    from "mini-tools";
 import * as serveContent from 'serve-content';
 import * as serveIndex   from 'serve-index';
@@ -82,6 +83,7 @@ export class Server4Test{
     constructor(opts:Partial<Server4TestOpts>){
         this.app = express();
         this.opts = changing(CONFIG_DEFAULT, opts);
+        this.app.use(cookieParser());
     }
     async start(): Promise<void>{
         var server = this;
@@ -96,7 +98,6 @@ export class Server4Test{
             };
             var method = serviceDef.method||'use'
             if(serviceDef.path){
-                console.log('listening entry point:',Path.posix.join(baseUrl,serviceDef.path))
                 server.app[method](Path.posix.join(baseUrl,serviceDef.path), middleware);
             }else{
                 if(method=='use'){
@@ -107,7 +108,6 @@ export class Server4Test{
         });
         var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"];
         paths.forEach((path, i)=>{
-            console.log('path->',path)
             if(this.opts["server4test-directory"] && !i){
                 server.app.use(baseUrl+'/', serveIndex(path,{icons: true, view:'details'}));
             }
@@ -184,7 +184,9 @@ export class Server4Test{
     directServices():Array<ServiceDef>{
         var services:ServiceDef[] = [];
         if(existsSync('./webpack.config.js')){
-            console.log('using webpack.config.js')
+            if(this.opts.verbose){
+                console.log('using webpack.config.js')
+            }
             var options = require(Path.resolve('./webpack.config.js'));
             services.push({path:'', middleware:this.webPackService(options)})
         }
@@ -193,7 +195,6 @@ export class Server4Test{
                 console.log('serving echo')
             }
             services.push({path:'/echo', method:'get', middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>{
-                console.log('/echo',req.query)
                 var result=`<pre>${
                     [
                         {l:'query', o:req.query},
@@ -208,7 +209,6 @@ export class Server4Test{
                         {l:'xhr', o:req.xhr},
                     ].map(({l,o})=>l+': '+JSON.stringify(o,null,'    ')).join('\n\n').replace(/</g,'&lt;')
                 }</pre>`;
-                console.log('/echo',result)
                 res.send(result);
             }})
         }
