@@ -1,7 +1,7 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "files": [
     "lib"
   ],
@@ -43,7 +43,7 @@
     "mixin-patch": "~0.3.3"
   },
   "engines": {
-    "node": ">= 8"
+    "node": ">= 12"
   },
   "scripts": {
     "start": "(mkdir local-file-store || echo 'using local-file-store) && node lib/launch4test.js",
@@ -51,8 +51,8 @@
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
-    "x-prepare": "(tsc || echo 'prepare with errors') && mixin-patch",
-    "prepare": "(tsc || echo 'prepare with errors')",
+    "prepare": "(tsc || echo 'prepare with errors') && mixin-patch",
+    "x-prepare": "(tsc || echo 'prepare with errors')",
     "mixin-patch": "mixin-patch"
   },
   "qa-control": {

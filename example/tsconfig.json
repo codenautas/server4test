@@ -2,10 +2,10 @@
     "compilerOptions": {
         "outDir": "./local-built",
         "lib":["es2015", "dom"],
-        "target": "es5",
-        "module": "umd",
+        "target": "es2017",
+        "module": "none",
         "typeRoots" : [
-            "./node_modules/@types/"
+            "../node_modules/@types/", "../node_modules/types.d.ts/modules"
         ],
         "strict": true,
         "noImplicitAny": true,
@@ -13,6 +13,7 @@
         "checkJs": true,
     },
     "files":[
+        "*.ts"
     ],
     "extends": "../tsconfig.json",
     "other": "./node_modules/require-bro/types/"

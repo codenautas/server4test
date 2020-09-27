@@ -23,6 +23,7 @@ const CONFIG_DEFAULT:Server4TestOpts={
         */
     },
     "base-url":'',
+    echo:false,
     "server4test-directory":false,
     "local-file-repo":{
         enabled: false,
@@ -48,6 +49,7 @@ export type Server4TestOpts={
     verbose:boolean,
     devel?:boolean,
     "base-url":string,
+    echo:boolean,
     "serve-content":serveContent.serveContentOptions,
     "public-dir"?:string|[string]
     "server4test-directory":boolean
@@ -75,11 +77,11 @@ export type ServiceDef = {
 export class Server4Test{
     app:express.Express;
     opts:Server4TestOpts;
-    port:number;
+    port:number=3000;
     listener:any;
     constructor(opts:Partial<Server4TestOpts>){
         this.app = express();
-        this.opts = {...CONFIG_DEFAULT, ...opts};
+        this.opts = changing(CONFIG_DEFAULT, opts);
     }
     async start(): Promise<void>{
         var server = this;
@@ -94,17 +96,15 @@ export class Server4Test{
             };
             var method = serviceDef.method||'use'
             if(serviceDef.path){
-                server.app[method](baseUrl+'/'+serviceDef.path, middleware);
+                console.log('listening entry point:',Path.posix.join(baseUrl,serviceDef.path))
+                server.app[method](Path.posix.join(baseUrl,serviceDef.path), middleware);
             }else{
                 if(method=='use'){
                     server.app[method](middleware);
                 }
-                server.app[method](baseUrl+'/',middleware);
+                server.app[method](Path.posix.join(baseUrl,'/'),middleware);
             }
         });
-        if(this.opts.devel){
-            server.app.use()
-        }
         var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"];
         paths.forEach((path, i)=>{
             console.log('path->',path)
@@ -132,7 +132,7 @@ export class Server4Test{
         })
     }
     localFileRepoMiddleware(
-        fun:(filename:string, params?:{content:string})=>Promise<{content?:string, timestamp?:number}>
+        fun:(filename:string, params:{content:string})=>Promise<{content?:string, timestamp?:number}>
     ){
         return async (req:Request, res:Response)=>{
             if(this.opts.verbose){
@@ -141,8 +141,9 @@ export class Server4Test{
             try{
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 if(typeof req.query.file !== "string") throw new Error('lack of filename');
+                if(typeof req.query.content !== "string") throw new Error('invalid content format');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
-                var result = await fun(filename,{content:req.query.content?.toString()});
+                var result = await fun(filename,{content:req.query.content});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 res.send(JSON.stringify(data));
@@ -186,6 +187,30 @@ export class Server4Test{
             console.log('using webpack.config.js')
             var options = require(Path.resolve('./webpack.config.js'));
             services.push({path:'', middleware:this.webPackService(options)})
+        }
+        if(this.opts.echo){
+            if(this.opts.verbose){
+                console.log('serving echo')
+            }
+            services.push({path:'/echo', method:'get', middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>{
+                console.log('/echo',req.query)
+                var result=`<pre>${
+                    [
+                        {l:'query', o:req.query},
+                        {l:'path', o:req.path},
+                        {l:'headers', o:req.headers},
+                        {l:'cookies', o:req.cookies},
+                        {l:'ip', o:req.ip},
+                        {l:'ips', o:req.ips},
+                        {l:'originalUrl', o:req.originalUrl},
+                        {l:'rawTrailers', o:req.rawTrailers},
+                        {l:'url', o:req.url},
+                        {l:'xhr', o:req.xhr},
+                    ].map(({l,o})=>l+': '+JSON.stringify(o,null,'    ')).join('\n\n').replace(/</g,'&lt;')
+                }</pre>`;
+                console.log('/echo',result)
+                res.send(result);
+            }})
         }
         if(this.opts["local-file-repo"].enabled){
             services = [...services, ...this.fileServices()];

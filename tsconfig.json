@@ -2,7 +2,7 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "lib",
-        "module": "umd",
+        "module": "none",
         "target": "es2017",
         "sourceMap": true,
         "typeRoots" : ["node_modules/@types", "node_modules/types.d.ts/modules"],
@@ -10,6 +10,7 @@
         "noImplicitAny": true,
         "moduleResolution": "node",
         "skipLibCheck": true,
+        "strict": true,
         "lib": [ "es2015" ]
     },
     "include":[
