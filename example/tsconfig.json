@@ -13,7 +13,8 @@
         "checkJs": true,
     },
     "files":[
-        "*.ts"
+        "example-server.ts",
+        "client.ts"
     ],
     "extends": "../tsconfig.json",
     "other": "./node_modules/require-bro/types/"

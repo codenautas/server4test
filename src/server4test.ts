@@ -13,11 +13,12 @@ type RequestDefinition = {
     method:'get'|'post'|'put'|'delete'|'use',
     path:string
 };
-const CONFIG_DEFAULT:Server4TestOpts={
+export const CONFIG_DEFAULT:Server4TestOpts={
     port: 8080,
     verbose: true,
     "serve-content":{
-        allowAllExts:true,
+        allowAllExts:false,
+        allowedExts:['png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl'],
         /*
         ".jade":{extOriginal:"jade"},
         ".styl":{extOriginal:"styl"},
@@ -132,7 +133,7 @@ export class Server4Test{
         })
     }
     localFileRepoMiddleware(
-        fun:(filename:string, params:{content:string})=>Promise<{content?:string, timestamp?:number}>
+        fun:(filename:string, params:{content:string|null|undefined})=>Promise<{content?:string, timestamp?:number}>
     ){
         return async (req:Request, res:Response)=>{
             if(this.opts.verbose){
@@ -141,7 +142,7 @@ export class Server4Test{
             try{
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 if(typeof req.query.file !== "string") throw new Error('lack of filename');
-                if(typeof req.query.content !== "string") throw new Error('invalid content format');
+                if(req.query.content!=null && typeof req.query.content !== "string") throw new Error('invalid content format');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
                 var result = await fun(filename,{content:req.query.content});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
@@ -233,5 +234,30 @@ export class Server4Test{
                 reject(err);
             }
         });
+    }
+}
+
+export type LaunchOpts={
+    serverClass:typeof Server4Test
+    server4test:Partial<Server4TestOpts>
+}
+
+export async function launch(opts?:Partial<LaunchOpts>){
+    var config = await MiniTools.readConfig<LaunchOpts>([
+        {
+            serverClass: Server4Test,
+            server4test:CONFIG_DEFAULT
+        },
+        (opts||{}) as LaunchOpts,
+        'server4test-config',
+        'local-config',
+    ], {whenNotExist: 'ignore'});
+    var ServerConstructor = config.serverClass;
+    var server = new ServerConstructor(config.server4test);
+    server.start();
+    console.log('server listening at',server.port);
+    if(config.server4test.verbose){
+        console.log('server4test-config');
+        console.dir(config, {depth:6});
     }
 }

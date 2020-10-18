@@ -1,6 +1,6 @@
 
 async function fetchAndShow(url:string, id:string):Promise<void>{
-    let element = document.getElementById(id);
+    let element = document.getElementById(id)!;
     try{
         let response = await fetch(url);
         element.style.color='green';
