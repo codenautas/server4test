@@ -7,7 +7,6 @@ import {changing, sleep} from 'best-globals';
 import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
-import { Request, Response } from 'express';
 
 type RequestDefinition = {
     method:'get'|'post'|'put'|'delete'|'use',
@@ -68,12 +67,16 @@ export type Server4TestOpts={
 serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'.jade'});
 serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'.styl'});
 
+export declare type Request = express.Request;
+export declare type Response = express.Response;
+export declare type NextFunction = express.NextFunction;
+
 export type ServiceDef = {
     path:string, 
     method?:'get'|'post'|'delete'|'put'|'use'
 } & (
     {html:string}|
-    {middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>any}
+    {middleware:(req:Request, res:Response, next?:NextFunction)=>any}
 );
 
 export class Server4Test{
@@ -94,7 +97,7 @@ export class Server4Test{
         },this.opts["serve-content"]||{});
         server.port = this.opts.port;
         this.directServices().forEach(function(serviceDef){
-            var middleware = 'middleware' in serviceDef?serviceDef.middleware:function(req:express.Request, res:express.Response){
+            var middleware = 'middleware' in serviceDef?serviceDef.middleware:function(req:Request, res:Response){
                 MiniTools.serveText(serviceDef.html,'html')(req,res);
             };
             var method = serviceDef.method||'use'
@@ -195,7 +198,7 @@ export class Server4Test{
             if(this.opts.verbose){
                 console.log('serving echo')
             }
-            services.push({path:'/echo', method:'get', middleware:(req:express.Request, res:express.Response, next?:express.NextFunction)=>{
+            services.push({path:'/echo', method:'get', middleware:(req:Request, res:Response, next?:NextFunction)=>{
                 var result=`<pre>${
                     [
                         {l:'query', o:req.query},
