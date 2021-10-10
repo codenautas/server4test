@@ -52,7 +52,7 @@ export type Server4TestOpts={
     devel?:boolean,
     "base-url":string,
     echo:boolean,
-    "serve-content":serveContent.serveContentOptions,
+    "serve-content":serveContent.ServeContentOptions,
     "public-dir"?:string|[string]
     "server4test-directory":boolean
     "local-file-repo":{

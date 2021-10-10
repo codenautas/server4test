@@ -1,7 +1,7 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "files": [
     "lib"
   ],
@@ -30,7 +30,7 @@
     "best-globals": "~0.10.32",
     "errores": "^0.0.2",
     "mini-tools": "~1.11.1",
-    "serve-content": "~0.3.15"
+    "serve-content": "~0.3.16"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.2",
@@ -42,7 +42,7 @@
     "fetch-ie8": "~1.5.0",
     "whatwg-fetch": "~3.6.2",
     "require-bro": "~0.2.2",
-    "types.d.ts": "~0.6.3",
+    "types.d.ts": "~0.6.4",
     "mixin-patch": "~0.3.7"
   },
   "engines": {
