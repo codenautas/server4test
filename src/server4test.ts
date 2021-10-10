@@ -7,6 +7,7 @@ import {changing, sleep} from 'best-globals';
 import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
+import * as errores      from 'errores';
 
 type RequestDefinition = {
     method:'get'|'post'|'put'|'delete'|'use',
@@ -117,7 +118,7 @@ export class Server4Test{
             }
             server.app.use(baseUrl+'/',serveContent(path,optsGenericForFiles));
         })
-        await new Promise(function(resolve, _reject){
+        await new Promise<void>(function(resolve, _reject){
             server.listener = server.app.listen(server.port, resolve);
         });
     }
@@ -153,8 +154,9 @@ export class Server4Test{
                 res.send(JSON.stringify(data));
                 res.end();
             }catch(err){
-                console.log(req.path, req.query, err);
-                res.statusCode=err.code=='ENOENT'?404:502;
+                var error = errores.unexpected(err);
+                console.log(req.path, req.query, error);
+                res.statusCode=error.code=='ENOENT'?404:502;
                 res.send('server error');
                 res.end();
             }
@@ -224,7 +226,7 @@ export class Server4Test{
     }
     async closeServer():Promise<void>{
         var server = this;
-        await new Promise(function(resolve,reject){
+        await new Promise<void>(function(resolve,reject){
             try{
                 server.listener.close(function(err:Error){
                     if(err){
