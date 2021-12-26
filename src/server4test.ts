@@ -18,7 +18,7 @@ export const CONFIG_DEFAULT:Server4TestOpts={
     verbose: true,
     "serve-content":{
         allowAllExts:false,
-        allowedExts:['png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl'],
+        allowedExts:['', 'png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl'],
         /*
         ".jade":{extOriginal:"jade"},
         ".styl":{extOriginal:"styl"},
@@ -65,8 +65,8 @@ export type Server4TestOpts={
     }
 }
 
-serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'.jade'});
-serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'.styl'});
+serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'jade-direct'});
+serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'styl-direct'});
 
 export declare type Request = express.Request;
 export declare type Response = express.Response;
@@ -94,8 +94,16 @@ export class Server4Test{
         var server = this;
         var baseUrl = this.opts["base-url"];
         var optsGenericForFiles=changing({
-            allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache', 'jade', 'styl']
-        },this.opts["serve-content"]||{});
+            allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache', 'jade', 'styl'],
+            /*
+            options:{
+                "jade-direct":{extOriginal:'jade'},
+                "styl-direct":{extOriginal:'styl'}
+            },
+            */
+            "jade-direct":{extOriginal:'jade'},
+            "styl-direct":{extOriginal:'styl'}
+    },this.opts["serve-content"]||{});
         server.port = this.opts.port;
         this.directServices().forEach(function(serviceDef){
             var middleware = 'middleware' in serviceDef?serviceDef.middleware:function(req:Request, res:Response){
