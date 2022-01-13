@@ -268,9 +268,19 @@ export async function launch(opts?:Partial<LaunchOpts>){
     var ServerConstructor = config.serverClass;
     var server = new ServerConstructor(config.server4test);
     server.start();
-    console.log('server listening at',server.port);
     if(config.server4test.verbose){
         console.log('server4test-config');
         console.dir(config, {depth:6});
+    }
+    console.log('server listening at','localhost:'+server.port+(config.server4test['base-url']??''));
+    if(!config.server4test['server4test-directory']){
+        console.error('server4test-directory is not set to true');
+        var dir = await fs.opendir('.');
+        for await (const dirent of dir){
+            var ext = Path.extname(dirent.name);
+            if(config.server4test['serve-content']?.allowAllExts || ext && config.server4test['serve-content']?.allowedExts?.includes(ext)){
+                console.log('  localhost:'+server.port+(config.server4test['base-url']??'')+'/'+dirent.name);
+            }
+        }
     }
 }
