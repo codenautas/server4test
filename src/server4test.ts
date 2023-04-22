@@ -7,7 +7,7 @@ import {changing, sleep} from 'best-globals';
 import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
-import * as errores      from 'errores';
+import {unexpected}      from 'cast-error';
 
 type RequestDefinition = {
     method:'get'|'post'|'put'|'delete'|'use',
@@ -162,7 +162,7 @@ export class Server4Test{
                 res.send(JSON.stringify(data));
                 res.end();
             }catch(err){
-                var error = errores.unexpected(err);
+                var error = unexpected(err);
                 console.log(req.path, req.query, error);
                 res.statusCode=error.code=='ENOENT'?404:502;
                 res.send('server error');
@@ -186,6 +186,7 @@ export class Server4Test{
                 return {content};
             })},
             {...this.opts["local-file-repo"].writeRequest, middleware:this.localFileRepoMiddleware(async (filename:string, {content})=>{
+                if (content == null) throw new Error("null in content accesing local-file-repo")
                 await fs.writeFile(filename, content, 'utf8')
                 return {};
             })},
