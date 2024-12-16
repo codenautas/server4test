@@ -18,7 +18,10 @@ export const CONFIG_DEFAULT:Server4TestOpts={
     verbose: true,
     "serve-content":{
         allowAllExts:false,
-        allowedExts:['', 'png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl'],
+        allowedExts:['', 'png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl', 'ico',
+            /* FONTS: */ 'ttf', 'jfproj', 'pfa', 'woff', 'fnt', 'fot', 'otf', 'odttf', 'fon',
+            /* OTHERS */ 'map', 'appcache', 'json', 'webmanifest', 'zip', 'pdf', 'xlsx', 'csv', 'mjs', 'jsx'
+        ],
         /*
         ".jade":{extOriginal:"jade"},
         ".styl":{extOriginal:"styl"},
@@ -43,6 +46,23 @@ export const CONFIG_DEFAULT:Server4TestOpts={
             method:'get',
             path:'/file-delete'
         }
+    }
+};
+
+export const CONFIG_SUPER_INSECURE:Server4TestOpts={
+    ...CONFIG_DEFAULT,
+    "serve-content":{
+        allowAllExts:true,
+        allowedExts:['', 'png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl'],
+        /*
+        ".jade":{extOriginal:"jade"},
+        ".styl":{extOriginal:"styl"},
+        */
+    },
+    "server4test-directory":true,
+    "local-file-repo":{
+        ...CONFIG_DEFAULT["local-file-repo"],
+        enabled: true,
     }
 };
 
@@ -260,7 +280,7 @@ export async function launch(opts?:Partial<LaunchOpts>){
     var config = await MiniTools.readConfig<LaunchOpts>([
         {
             serverClass: Server4Test,
-            server4test:CONFIG_DEFAULT
+            server4test: process.argv.includes('--super-insecure') ? CONFIG_SUPER_INSECURE : CONFIG_DEFAULT
         },
         (opts||{}) as LaunchOpts,
         'server4test-config',
@@ -273,9 +293,10 @@ export async function launch(opts?:Partial<LaunchOpts>){
         console.log('server4test-config');
         console.dir(config, {depth:6});
     }
-    console.log('server listening at','localhost:'+server.port+(config.server4test['base-url']??''));
+    console.log('server listening at','http://localhost:'+server.port+(config.server4test['base-url']??''));
     if(!config.server4test['server4test-directory']){
         console.error('server4test-directory is not set to true');
+        console.warn('try', 'server4test --super-insecure');
         var dir = await fs.opendir('.');
         for await (const dirent of dir){
             var ext = Path.extname(dirent.name);
