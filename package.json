@@ -57,6 +57,7 @@
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test": "tsc -p test && mocha --report lcovonly -- --reporter spec --check-leaks local-test/test/",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
+    "prepublish": "npm run build",
     "build": "tsc && mixin-patch",
     "preversion": "npm test",
     "version": "npm run build",
