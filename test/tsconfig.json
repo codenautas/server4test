@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "moduleResolution": "node",
+        "strict": true,
+        "strictBindCallApply": true,
+        "skipLibCheck": true, //para que no haga chequeo de tipos en los declaration files dentro de node-modules(pg-promise-strict, express, node)
+        "module": "none",
+        "typeRoots" : ["../node_modules/@types", "../node_modules/types.d.ts/modules"],
+        "declarationMap": true,
+        "noImplicitAny": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "outDir": "../local-test",
+        "target": "es2022",
+        "lib":["es2017", "es2015", "es2018", "es2022"],
+        "baseUrl": "",
+        "strictNullChecks": false
+    },
+    "include":[
+        "."
+    ]
+}

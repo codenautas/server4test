@@ -29,17 +29,19 @@
     "webpack-dev-middleware": "^7.4.2",
     "best-globals": "^1.1.6",
     "cast-error": "^0.1.1",
-    "mini-tools": "^1.12.2",
+    "mini-tools": "^1.13.2",
     "serve-content": "^0.3.20"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.2",
     "@types/serve-index": "^1.9.4",
     "es5-shim": "^4.6.7",
     "fetch-ie8": "^1.5.0",
+    "mocha": "^11.0.1",
     "whatwg-fetch": "^3.6.20",
     "require-bro": "^0.3.1",
     "types.d.ts": "^0.6.22",
@@ -49,13 +51,18 @@
     "node": ">= 12"
   },
   "scripts": {
-    "start": "(mkdir local-file-store || echo 'using local-file-store) && node lib/launch4test.js",
+    "start": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js",
+    "start-super-insecure": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js --super-insecure",
     "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
-    "test": "mocha --report lcovonly -- --reporter spec --check-leaks test/",
+    "test": "tsc -p test && mocha --report lcovonly -- --reporter spec --check-leaks local-test/test/",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
     "prepare": "tsc && mixin-patch",
+    "preversion": "npm test",
+    "version": "npm run prepare",
+    "postversion": "git push && git push --tags",
     "x-prepare": "(tsc || echo 'prepare with errors')",
+
     "mixin-patch": "mixin-patch"
   },
   "qa-control": {
