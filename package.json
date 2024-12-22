@@ -48,7 +48,7 @@
     "mixin-patch": "^0.4.1"
   },
   "engines": {
-    "node": ">= 12"
+    "node": ">= 20"
   },
   "scripts": {
     "start": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js",
@@ -57,12 +57,10 @@
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "test": "tsc -p test && mocha --report lcovonly -- --reporter spec --check-leaks local-test/test/",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
-    "prepare": "tsc && mixin-patch",
+    "build": "tsc && mixin-patch",
     "preversion": "npm test",
-    "version": "npm run prepare",
+    "version": "npm run build",
     "postversion": "git push && git push --tags",
-    "x-prepare": "(tsc || echo 'prepare with errors')",
-
     "mixin-patch": "mixin-patch"
   },
   "qa-control": {
