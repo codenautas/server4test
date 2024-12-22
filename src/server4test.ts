@@ -46,7 +46,8 @@ export const CONFIG_DEFAULT:Server4TestOpts={
             method:'get',
             path:'/file-delete'
         }
-    }
+    },
+    "serve-index": {icons: true, view:'details'}
 };
 
 export const CONFIG_SUPER_INSECURE:Server4TestOpts={
@@ -54,6 +55,8 @@ export const CONFIG_SUPER_INSECURE:Server4TestOpts={
     "serve-content":{
         allowAllExts:true,
         allowedExts:['', 'png', 'jpg', 'jpeg', 'bmp', 'svg', 'gif', 'html', 'css', 'htm', 'js', 'manifest', 'cache', 'md', 'jade', 'styl'],
+        dotfiles: "allow",
+        index: ["index.html", "index.htm", "index.js"]
         /*
         ".jade":{extOriginal:"jade"},
         ".styl":{extOriginal:"styl"},
@@ -63,6 +66,10 @@ export const CONFIG_SUPER_INSECURE:Server4TestOpts={
     "local-file-repo":{
         ...CONFIG_DEFAULT["local-file-repo"],
         enabled: true,
+    },
+    "serve-index": {
+        ...CONFIG_DEFAULT["serve-index"],
+        hidden:true
     }
 };
 
@@ -83,6 +90,7 @@ export type Server4TestOpts={
         writeRequest:RequestDefinition
         deleteRequest:RequestDefinition
     }
+    "serve-index":serveIndex.Options
 }
 
 serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'jade-direct'});
@@ -142,7 +150,7 @@ export class Server4Test{
         var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"];
         paths.forEach((path, i)=>{
             if(this.opts["server4test-directory"] && !i){
-                server.app.use(baseUrl+'/', serveIndex(path,{icons: true, view:'details'}));
+                server.serveIndex4Test(baseUrl, path);
             }
             server.app.use(baseUrl+'/',serveContent(path,optsGenericForFiles));
         })
@@ -156,8 +164,8 @@ export class Server4Test{
         const compiler = webpack(webPackOptions||{
         // webpack options
         });
-        const express = require('express');
-        const app = express();
+        // const express = require('express');
+        // const app = express();
         return middleware(compiler, webpackDevMiddlewareOptions||{
             publicPath:'/dist',
             headers: { "X-Custom-Header": "yes" }
@@ -176,7 +184,7 @@ export class Server4Test{
                 if(typeof req.query.file !== "string") throw new Error('lack of filename');
                 if(req.query.content!=null && typeof req.query.content !== "string") throw new Error('invalid content format');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
-                var result = await fun(filename,{content:req.query.content});
+                var result = await fun(filename,{content:req.query.content as string});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
                 await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
                 res.send(JSON.stringify(data));
@@ -229,7 +237,7 @@ export class Server4Test{
             if(this.opts.verbose){
                 console.log('serving echo')
             }
-            services.push({path:'/echo', method:'get', middleware:(req:Request, res:Response, next?:NextFunction)=>{
+            services.push({path:'/echo', method:'get', middleware:(req:Request, res:Response, _next?:NextFunction)=>{
                 var result=`<pre>${
                     [
                         {l:'query', o:req.query},
@@ -252,6 +260,27 @@ export class Server4Test{
             console.log('services', services)
         }
         return services;
+    }
+    serveIndex4Test(baseUrl:string, path:string){
+        var server = this;
+        server.app.use(baseUrl+'/', function(req, res, next){
+            var theOrinigalEnd = res.end;
+            // @ts-expect-error hacky replace
+            res.end = function(chunk, encoding, cb){
+                if (typeof chunk == "string") {
+                    chunk = chunk
+                        .replace(/href="\/">~<\/a>/g, 'href="/?dir">~</a>')
+                        .replace(/( \/ <a href="\/[^/<>"]+)(">)/g, '$1?dir$2')
+                        .replace(/" class="icon icon-directory"/g, '?dir$&')
+                }
+                return theOrinigalEnd.call(res, chunk, encoding, cb);
+            }
+            if (req.query.dir !== undefined) {
+                serveIndex(path, server.opts["serve-index"])(req, res, next);
+            } else {
+                next();
+            }
+        });
     }
     async closeServer():Promise<void>{
         var server = this;
@@ -293,7 +322,7 @@ export async function launch(opts?:Partial<LaunchOpts>){
         console.log('server4test-config');
         console.dir(config, {depth:6});
     }
-    console.log('server listening at','http://localhost:'+server.port+(config.server4test['base-url']??''));
+    console.log('server listening at','http://localhost:'+server.port+(config.server4test['base-url']??'')+'?dir');
     if(!config.server4test['server4test-directory']){
         console.error('server4test-directory is not set to true');
         console.warn('try', 'server4test --super-insecure');
