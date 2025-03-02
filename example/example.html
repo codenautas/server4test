@@ -1,4 +1,8 @@
 <!DOCTYPE HTML>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+</head>
+<body>
 <h1>Example server4text</h1>
 <img src="server-ok.png">
 <p>dummy <span id=dummy></span>
@@ -9,9 +13,13 @@
 <button id=borrar>borrar</button>
 <button id=traer>traer</button>
 <p id=time></p>
+<!-- <textarea id=mymd2 lines="20" style="height:500px; width:80%"></textarea> -->
+<textarea id=mymd></textarea>
 <script src=../node_modules/es5-shim/es5-shim.js></script>
 <script src=../node_modules/es5-shim/es5-sham.js></script>
 <script src=../node_modules/require-bro/lib/polyfills-bro.js></script>
 <script src=../node_modules/fetch-ie8/fetch.js></script>
 <script src=local-built/example/client.js></script>
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script src=example.js></script>
+</body>
