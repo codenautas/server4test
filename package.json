@@ -1,7 +1,7 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "files": [
     "lib"
   ],
@@ -23,7 +23,9 @@
     "@babel/core": ">=7.29.6",
     "diff": ">=8.0.2",
     "serialize-javascript": ">=7.0.0",
-    "stylus": { "glob": "^11" },
+    "stylus": {
+      "glob": "^11"
+    },
     "uuid": ">=14.0.0"
   },
   "dependencies": {
