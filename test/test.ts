@@ -46,4 +46,3 @@ describe("connected", function(){
         assert.equal(content.replace(/\r/,''),`This is one example\nin two lines.`)
     })
 })
-

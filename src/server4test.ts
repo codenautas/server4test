@@ -32,7 +32,7 @@ export const CONFIG_DEFAULT:Server4TestOpts={
     "server4test-directory":false,
     "local-file-repo":{
         enabled: false,
-        delay:200, 
+        delay:200,
         directory: "local-file-repo",
         readRequest:{
             method:'get',
@@ -74,7 +74,7 @@ export const CONFIG_SUPER_INSECURE:Server4TestOpts={
 };
 
 export type Server4TestOpts={
-    port:number, 
+    port:number,
     verbose:boolean,
     devel?:boolean,
     "base-url":string,
@@ -93,7 +93,13 @@ export type Server4TestOpts={
     "serve-index":serveIndex.Options
 }
 
-serveContent.transformer.jade = changing(serveContent.transformer[''],{/*extOriginal:'jade', */ optionName:'jade-direct'});
+var jadeTransformer = (serveContent.transformer[''] instanceof Array ? serveContent.transformer[''] : [serveContent.transformer['']]).find(
+    transformer => transformer.optionName == 'jade'
+);
+if(jadeTransformer == null){
+    throw new Error("server4test: can not find the 'jade' transformer in serve-content");
+}
+serveContent.transformer.jade = changing(jadeTransformer,{/*extOriginal:'jade', */ optionName:'jade-direct'});
 serveContent.transformer.styl = changing(serveContent.transformer.css,{/*extOriginal:'styl', */ optionName:'styl-direct'});
 
 export declare type Request = express.Request;
@@ -101,7 +107,7 @@ export declare type Response = express.Response;
 export declare type NextFunction = express.NextFunction;
 
 export type ServiceDef = {
-    path:string, 
+    path:string,
     method?:'get'|'post'|'delete'|'put'|'use'
 } & (
     {html:string}|
@@ -154,8 +160,14 @@ export class Server4Test{
             }
             server.app.use(baseUrl+'/',serveContent(path,optsGenericForFiles));
         })
-        await new Promise<void>(function(resolve, _reject){
-            server.listener = server.app.listen(server.port, resolve);
+        await new Promise<void>(function(resolve, reject){
+            server.listener = server.app.listen(server.port, function(error?:Error){
+                if(error){
+                    reject(error);
+                }else{
+                    resolve();
+                }
+            });
         });
     }
     webPackService(webPackOptions:any, webpackDevMiddlewareOptions?:any){
