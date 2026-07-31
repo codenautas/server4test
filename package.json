@@ -23,6 +23,7 @@
     "@babel/core": ">=7.29.6",
     "diff": ">=8.0.2",
     "serialize-javascript": ">=7.0.0",
+    "stylus": { "glob": "^11" },
     "uuid": ">=14.0.0"
   },
   "dependencies": {
@@ -52,7 +53,7 @@
     "qa-control": "^0.9.1",
     "require-bro": "^0.3.6",
     "types.d.ts": "^0.6.22",
-    "mixin-patch": "^0.5.0"
+    "mixin-patch": "^1.0.0-rc.3"
   },
   "engines": {
     "node": ">= 20"
@@ -76,7 +77,8 @@
     "run-in": "client",
     "type": "lib",
     "gha": "all",
-    "multilang": "no"
+    "test-appveyor": true,
+    "multilang": "yes"
   },
   "mixin-patch": {
     "patch": [
