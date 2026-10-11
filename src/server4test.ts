@@ -10,7 +10,7 @@ import * as Path         from 'path';
 import {unexpected}      from 'cast-error';
 import {
     BrowserTestOpts, BrowserTestReport, BROWSER_TEST_PAGE_PATH, BROWSER_TEST_RESULT_PATH,
-    browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers
+    browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers, saveBrowserTestCoverage
 } from './browser-runner';
 
 type RequestDefinition = {
@@ -304,10 +304,16 @@ export class Server4Test{
                         var listener = runId == null ? undefined : this.browserTestListeners.get(runId);
                         if(listener){
                             listener(report);
+                            res.send('ok');
                         }else{
-                            printBrowserTestReport(report, 'browser');
+                            saveBrowserTestCoverage(report, 'browser', browserTest).then(()=>{
+                                printBrowserTestReport(report, 'browser');
+                                res.send('ok');
+                            }, (err:unknown)=>{
+                                console.error('server4test: can not save the browser test coverage', err);
+                                res.status(500).send('can not save the coverage');
+                            });
                         }
-                        res.send('ok');
                     }catch(err){
                         console.error('server4test: invalid browser test report', err);
                         res.status(400).send('invalid browser test report');

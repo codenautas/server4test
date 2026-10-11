@@ -381,7 +381,7 @@ archivos indicados, lanza el navegador apuntando a esa página y espera que la p
 mande el resultado con un POST.
 
 Se configura con la lista de archivos a cargar, en orden (mocha se carga solo, desde
-`node_modules/mocha`):
+`node_modules/mocha`). Los `.css` se cargan como hojas de estilo y el resto como _scripts_:
 
 <!--lang:en--]
 
@@ -391,7 +391,7 @@ and the listed files, launches the browser pointing to that page and waits for t
 to send the result with a POST.
 
 It is configured with the list of files to load, in order (mocha is loaded automatically,
-from `node_modules/mocha`):
+from `node_modules/mocha`). The `.css` files are loaded as stylesheets and the rest as scripts:
 
 [!--lang:*-->
 
@@ -399,11 +399,13 @@ from `node_modules/mocha`):
 server4test:
   browser-test:
     files:
+      - my-lib.css
       - node_modules/require-bro/lib/require-bro.js
       - node_modules/expect.js/index.js
       - my-lib.js
       - test/test.js
     timeout: 120000 # ms waiting for the results of each browser (default 120000)
+    coverage-dir: .nyc_output # where the coverage is saved (default .nyc_output)
 ```
 
 <!--lang:es-->
@@ -436,6 +438,9 @@ Corriendo `server4test` sin `--run-browser` la página queda disponible en
 `/server4test-browser-test` para abrirla a mano en cualquier navegador; el resultado se
 muestra en la consola del servidor.
 
+Una imagen (u otro recurso que no sea un archivo de la lista) que no se puede cargar se
+muestra como advertencia, no hace fallar la corrida.
+
 <!--lang:en--]
 
 Each browser runs separately, with a temporary profile, and the server uses a free port.
@@ -450,6 +455,49 @@ of GitHub Actions already have Chrome and Firefox installed.
 Running `server4test` without `--run-browser` the page is available at
 `/server4test-browser-test` to open it manually in any browser; the result is shown in
 the server console.
+
+An image (or another resource that is not a file of the list) that can not be loaded is
+shown as a warning, it does not make the run fail.
+
+[!--lang:es-->
+
+## cobertura
+
+<!--lang:en--]
+
+## coverage
+
+[!--lang:es-->
+
+Si los archivos están instrumentados por istanbul (por ejemplo con `nyc instrument`), la
+página manda `window.__coverage__` junto con el resultado y _server4test_ lo guarda en
+`coverage-dir` como `server4test-<navegador>.json`; después `nyc report` arma el reporte
+(juntando los navegadores):
+
+<!--lang:en--]
+
+If the files are instrumented by istanbul (i.e. with `nyc instrument`), the page sends
+`window.__coverage__` together with the result and _server4test_ saves it in
+`coverage-dir` as `server4test-<browser>.json`; then `nyc report` builds the report
+(merging the browsers):
+
+[!--lang:*-->
+
+```sh
+nyc instrument --delete lib local-instrumented/lib
+server4test --run-browser chrome,firefox
+nyc report --reporter=text --reporter=lcov
+```
+
+<!--lang:es-->
+
+En ese caso la lista de archivos tiene que cargar la versión instrumentada
+(`local-instrumented/lib/my-lib.js` en el ejemplo).
+
+<!--lang:en--]
+
+In that case the list of files must load the instrumented version
+(`local-instrumented/lib/my-lib.js` in the example).
 
 [!--lang:es-->
 

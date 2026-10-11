@@ -7,10 +7,12 @@ import type { Server4Test, Server4TestOpts } from './server4test';
 export const BROWSER_TEST_PAGE_PATH = '/server4test-browser-test';
 export const BROWSER_TEST_RESULT_PATH = '/server4test-browser-result';
 export const BROWSER_TEST_TIMEOUT_DEFAULT = 120000;
+export const BROWSER_TEST_COVERAGE_DIR_DEFAULT = '.nyc_output';
 
 export type BrowserTestOpts = {
     files: string[]
     timeout?: number
+    "coverage-dir"?: string
 }
 
 export type BrowserTestFailure = {
@@ -29,6 +31,8 @@ export type BrowserTestReport = {
     passes: number
     pending: number
     failures: BrowserTestFailure[]
+    /** window.__coverage__ when the files are instrumented by istanbul (i.e. nyc instrument) */
+    coverage?: Record<string, unknown>
 }
 
 export type BrowserName = 'chrome' | 'firefox';
@@ -136,6 +140,8 @@ export function browserTestPage(baseUrl: string, browserTest: BrowserTestOpts): 
         var target = event.target;
         if(target && target.tagName && (target.tagName == 'SCRIPT' || target.tagName == 'LINK')){
             report.loadErrors.push(target.src || target.href);
+        }else if(target && target.tagName){
+            report.console.push({level: 'warn', text: 'can not load ' + target.tagName.toLowerCase() + ': ' + (target.src || target.href)});
         }else{
             report.errors.push((event.message || 'error') + ' at ' + event.filename + ':' + event.lineno + (event.error && event.error.stack ? '\\n' + event.error.stack : ''));
         }
@@ -149,13 +155,14 @@ export function browserTestPage(baseUrl: string, browserTest: BrowserTestOpts): 
 <script>
 if(typeof mocha !== 'undefined') mocha.setup({ui: 'bdd'});
 </script>
-${browserTest.files.map(file => `<script src="${url(file)}"></script>`).join('\n')}
+${browserTest.files.map(file => /\.css$/i.test(file) ? `<link rel="stylesheet" href="${url(file)}">` : `<script src="${url(file)}"></script>`).join('\n')}
 <script>
 (function(){
     var report = window.server4testReport;
     var runId = new URLSearchParams(location.search).get('run');
     function send(){
         report.finished = true;
+        if(window.__coverage__) report.coverage = window.__coverage__;
         fetch(${jsonForScript(baseUrl + BROWSER_TEST_RESULT_PATH)} + (runId ? '?run=' + encodeURIComponent(runId) : ''), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -214,6 +221,9 @@ export function parseBrowserTestReport(body: unknown): BrowserTestReport{
     if(!Array.isArray(body.failures) || !body.failures.every(failure => isObject(failure) && typeof failure.title === 'string' && typeof failure.message === 'string' && (failure.stack == null || typeof failure.stack === 'string'))){
         throw new Error('server4test: invalid browser test report, failures must be an array of {title, message, stack}');
     }
+    if(body.coverage != null && !isObject(body.coverage)){
+        throw new Error('server4test: invalid browser test report, coverage must be an object');
+    }
     return {
         userAgent: String(body.userAgent),
         console: body.console,
@@ -223,8 +233,19 @@ export function parseBrowserTestReport(body: unknown): BrowserTestReport{
         tests: asNumber(body.tests, 'tests'),
         passes: asNumber(body.passes, 'passes'),
         pending: asNumber(body.pending, 'pending'),
-        failures: body.failures
+        failures: body.failures,
+        ...(isObject(body.coverage) ? {coverage: body.coverage} : {})
     };
+}
+
+/** saves the coverage (if any) in the coverage-dir (default .nyc_output) to be used by nyc report */
+export async function saveBrowserTestCoverage(report: BrowserTestReport, label: string, browserTest: BrowserTestOpts): Promise<void>{
+    if(report.coverage == null) return;
+    var dir = browserTest["coverage-dir"] ?? BROWSER_TEST_COVERAGE_DIR_DEFAULT;
+    var fileName = Path.join(dir, 'server4test-' + label.replace(/[^-A-Za-z_0-9]/g, '_') + '.json');
+    await fsp.mkdir(dir, {recursive: true});
+    await fsp.writeFile(fileName, JSON.stringify(report.coverage), 'utf8');
+    console.log(`[${label}] coverage saved in ${fileName}`);
 }
 
 /** prints the report and returns true if all is ok */
@@ -260,7 +281,8 @@ async function stopProcess(child: ChildProcess): Promise<void>{
     });
 }
 
-async function runBrowser(server: Server4Test, baseUrl: string, browser: BrowserName, timeout: number): Promise<boolean>{
+async function runBrowser(server: Server4Test, baseUrl: string, browser: BrowserName, browserTest: BrowserTestOpts): Promise<boolean>{
+    var timeout = browserTest.timeout ?? BROWSER_TEST_TIMEOUT_DEFAULT;
     var executable = findExecutable(browser);
     var profileDir = await fsp.mkdtemp(Path.join(os.tmpdir(), 'server4test-' + browser + '-'));
     var runId = browser + '-' + Date.now();
@@ -289,6 +311,7 @@ async function runBrowser(server: Server4Test, baseUrl: string, browser: Browser
                 reject(new Error(`server4test: ${browser} finished (code ${code}, signal ${signal}) before sending results`));
             });
         });
+        await saveBrowserTestCoverage(report, browser, browserTest);
         return printBrowserTestReport(report, browser);
     }catch(err){
         console.error(`[${browser}]`, err);
@@ -336,7 +359,7 @@ export async function runBrowsers(ServerConstructor: typeof Server4Test, opts: S
         var baseUrl = 'http://localhost:' + address.port + opts["base-url"];
         var ok = true;
         for(var browser of browsers.filter(isBrowserName)){
-            ok = await runBrowser(server, baseUrl, browser, browserTest.timeout ?? BROWSER_TEST_TIMEOUT_DEFAULT) && ok;
+            ok = await runBrowser(server, baseUrl, browser, browserTest) && ok;
         }
         return ok;
     }finally{

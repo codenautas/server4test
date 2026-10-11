@@ -8,6 +8,8 @@ import * as Path from 'path';
 
 import * as assert from 'assert';
 
+import { promises as fs } from 'fs';
+
 // import {promises as fs} from 'fs'
 
 // const TIMEOUT_SPEED = 1000 * (process.env.BP_TIMEOUT_SPEED as unknown as number ?? 1);
@@ -53,6 +55,7 @@ describe("browser-test", function(){
     var server: Server4Test
     var port = 8089
     var baseUrl = `http://localhost:${port}`
+    var coverageDir = Path.join('local-test', 'coverage-test')
     var validReport: BrowserTestReport = {
         userAgent: 'test-agent', console: [{level: 'log', text: 'hello'}], loadErrors: [], errors: [],
         finished: true, tests: 2, passes: 2, pending: 0, failures: []
@@ -63,7 +66,7 @@ describe("browser-test", function(){
         body: JSON.stringify(report)
     });
     before(async function(){
-        server = new Server4Test({...CONFIG_SUPER_INSECURE, port, "public-dir": "./example", "browser-test": {files: ['example.js', 'test/one test.js']}})
+        server = new Server4Test({...CONFIG_SUPER_INSECURE, port, "public-dir": "./example", "browser-test": {files: ['example.css', 'example.js', 'test/one test.js'], "coverage-dir": coverageDir}})
         await server.start()
     })
     after(async function(){
@@ -75,6 +78,8 @@ describe("browser-test", function(){
         const content = await response.text();
         const sources = [...content.matchAll(/<script src="([^"]*)"/g)].map(match => match[1]);
         assert.deepEqual(sources, ['/node_modules/mocha/mocha.js', '/example.js', '/test/one%20test.js']);
+        const styles = [...content.matchAll(/<link rel="stylesheet" href="([^"]*)"/g)].map(match => match[1]);
+        assert.deepEqual(styles, ['/node_modules/mocha/mocha.css', '/example.css']);
     })
     it("delivers a valid report to the listener of the run", async function(){
         var received: BrowserTestReport | null = null;
@@ -83,6 +88,18 @@ describe("browser-test", function(){
         server.browserTestListeners.delete('run-1');
         assert.equal(response.status, 200);
         assert.deepEqual(received, validReport);
+    })
+    it("saves the coverage of a report without listener", async function(){
+        var coverage = {'/lib/one.js': {path: '/lib/one.js', s: {'0': 1}}};
+        var coverageFile = Path.join(coverageDir, 'server4test-browser.json');
+        await fs.rm(coverageFile, {force: true});
+        const response = await postReport({...validReport, coverage}, 'not-listened');
+        assert.equal(response.status, 200);
+        assert.deepEqual(JSON.parse(await fs.readFile(coverageFile, 'utf8')), coverage);
+    })
+    it("rejects an invalid coverage", async function(){
+        const response = await postReport({...validReport, coverage: 'all'}, 'run-3');
+        assert.equal(response.status, 400);
     })
     it("rejects an invalid report", async function(){
         const response = await postReport({...validReport, tests: 'two'}, 'run-2');

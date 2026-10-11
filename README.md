@@ -208,18 +208,20 @@ and the listed files, launches the browser pointing to that page and waits for t
 to send the result with a POST.
 
 It is configured with the list of files to load, in order (mocha is loaded automatically,
-from `node_modules/mocha`):
+from `node_modules/mocha`). The `.css` files are loaded as stylesheets and the rest as scripts:
 
 
 ```yaml
 server4test:
   browser-test:
     files:
+      - my-lib.css
       - node_modules/require-bro/lib/require-bro.js
       - node_modules/expect.js/index.js
       - my-lib.js
       - test/test.js
     timeout: 120000 # ms waiting for the results of each browser (default 120000)
+    coverage-dir: .nyc_output # where the coverage is saved (default .nyc_output)
 ```
 
 
@@ -243,6 +245,29 @@ of GitHub Actions already have Chrome and Firefox installed.
 Running `server4test` without `--run-browser` the page is available at
 `/server4test-browser-test` to open it manually in any browser; the result is shown in
 the server console.
+
+An image (or another resource that is not a file of the list) that can not be loaded is
+shown as a warning, it does not make the run fail.
+
+
+## coverage
+
+
+If the files are instrumented by istanbul (i.e. with `nyc instrument`), the page sends
+`window.__coverage__` together with the result and _server4test_ saves it in
+`coverage-dir` as `server4test-<browser>.json`; then `nyc report` builds the report
+(merging the browsers):
+
+
+```sh
+nyc instrument --delete lib local-instrumented/lib
+server4test --run-browser chrome,firefox
+nyc report --reporter=text --reporter=lcov
+```
+
+
+In that case the list of files must load the instrumented version
+(`local-instrumented/lib/my-lib.js` in the example).
 
 
 # using it as a library
