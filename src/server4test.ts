@@ -8,6 +8,10 @@ import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
 import {unexpected}      from 'cast-error';
+import {
+    BrowserTestOpts, BrowserTestReport, BROWSER_TEST_PAGE_PATH, BROWSER_TEST_RESULT_PATH,
+    browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers
+} from './browser-runner';
 
 type RequestDefinition = {
     method:'get'|'post'|'put'|'delete'|'use',
@@ -91,6 +95,7 @@ export type Server4TestOpts={
         deleteRequest:RequestDefinition
     }
     "serve-index":serveIndex.Options
+    "browser-test"?:BrowserTestOpts
 }
 
 var jadeTransformer = (serveContent.transformer[''] instanceof Array ? serveContent.transformer[''] : [serveContent.transformer['']]).find(
@@ -119,6 +124,7 @@ export class Server4Test{
     opts:Server4TestOpts;
     port:number=3000;
     listener:any;
+    browserTestListeners = new Map<string, (report:BrowserTestReport)=>void>();
     constructor(opts:Partial<Server4TestOpts>){
         this.app = express();
         this.opts = changing(CONFIG_DEFAULT, opts);
@@ -171,8 +177,17 @@ export class Server4Test{
         });
     }
     webPackService(webPackOptions:any, webpackDevMiddlewareOptions?:any){
-        const webpack = require('webpack');
-        const middleware = require('webpack-dev-middleware');
+        var webpack, middleware;
+        try{
+            webpack = require('webpack');
+            middleware = require('webpack-dev-middleware');
+        }catch(err){
+            var error = unexpected(err);
+            if(error.code=='MODULE_NOT_FOUND'){
+                throw new Error("server4test: webpack.config.js found but webpack and webpack-dev-middleware are optional and not installed. Use: npm install --save-dev webpack webpack-dev-middleware. "+error.message);
+            }
+            throw error;
+        }
         const compiler = webpack(webPackOptions||{
         // webpack options
         });
@@ -271,7 +286,35 @@ export class Server4Test{
             services = [...services, ...this.fileServices()];
             console.log('services', services)
         }
+        if(this.opts["browser-test"]){
+            services = [...services, ...this.browserTestServices(this.opts["browser-test"])];
+        }
         return services;
+    }
+    browserTestServices(browserTest:BrowserTestOpts):ServiceDef[]{
+        var jsonParser = express.json({limit:'10mb'});
+        return [
+            {path:BROWSER_TEST_PAGE_PATH, method:'get', html:browserTestPage(this.opts["base-url"], browserTest)},
+            {path:BROWSER_TEST_RESULT_PATH, method:'post', middleware:(req:Request, res:Response)=>{
+                jsonParser(req, res, (err?:unknown)=>{
+                    try{
+                        if(err) throw err;
+                        var report = parseBrowserTestReport(req.body);
+                        var runId = typeof req.query.run === "string" ? req.query.run : null;
+                        var listener = runId == null ? undefined : this.browserTestListeners.get(runId);
+                        if(listener){
+                            listener(report);
+                        }else{
+                            printBrowserTestReport(report, 'browser');
+                        }
+                        res.send('ok');
+                    }catch(err){
+                        console.error('server4test: invalid browser test report', err);
+                        res.status(400).send('invalid browser test report');
+                    }
+                });
+            }},
+        ];
     }
     serveIndex4Test(baseUrl:string, path:string){
         var server = this;
@@ -328,6 +371,11 @@ export async function launch(opts?:Partial<LaunchOpts>){
         'local-config',
     ], {whenNotExist: 'ignore'});
     var ServerConstructor = config.serverClass;
+    var runBrowserIndex = process.argv.indexOf('--run-browser');
+    if(runBrowserIndex >= 0){
+        process.exitCode = await runBrowsers(ServerConstructor, changing(CONFIG_DEFAULT, config.server4test), process.argv[runBrowserIndex+1]) ? 0 : 1;
+        return;
+    }
     var server = new ServerConstructor(config.server4test);
     server.start();
     if(config.server4test.verbose){
@@ -335,6 +383,9 @@ export async function launch(opts?:Partial<LaunchOpts>){
         console.dir(config, {depth:6});
     }
     console.log('server listening at','http://localhost:'+server.port+(config.server4test['base-url']??'')+'?dir');
+    if(config.server4test['browser-test']){
+        console.log('browser test at','http://localhost:'+server.port+(config.server4test['base-url']??'')+BROWSER_TEST_PAGE_PATH);
+    }
     if(!config.server4test['server4test-directory']){
         console.error('server4test-directory is not set to true');
         console.warn('try', 'server4test --super-insecure');

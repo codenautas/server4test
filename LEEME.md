@@ -315,7 +315,21 @@ If a `webpack.config.js` exists in the current directory, it is loaded and serve
 through [webpack-dev-middleware](https://www.npmjs.com/package/webpack-dev-middleware)
 (by default under `/dist`).
 
+[!--lang:es-->
+
+Desde la versión 2.0 `webpack` y `webpack-dev-middleware` son dependencias opcionales
+(`peerDependencies`), así que para usar `webpack.config.js` hay que instalarlas en el proyecto:
+
+<!--lang:en--]
+
+Since version 2.0 `webpack` and `webpack-dev-middleware` are optional dependencies
+(`peerDependencies`), so to use `webpack.config.js` they must be installed in the project:
+
 [!--lang:*-->
+
+```sh
+npm install --save-dev webpack webpack-dev-middleware
+```
 
 # local-file-repo
 
@@ -354,6 +368,88 @@ is sanitized (any character outside `-A-Za-z_0-9.@` is replaced by `_`), so the
 store is flat and cannot escape the directory. A random delay of up to
 `local-file-repo.delay` milliseconds is added to each response, to make the
 asynchrony visible while testing.
+
+[!--lang:*-->
+
+# browser-test
+
+<!--lang:es-->
+
+Corre los tests de [mocha](https://mochajs.org/) en navegadores reales (Chrome y Firefox)
+en modo _headless_ y sin _drivers_: _server4test_ genera una página que carga mocha y los
+archivos indicados, lanza el navegador apuntando a esa página y espera que la página le
+mande el resultado con un POST.
+
+Se configura con la lista de archivos a cargar, en orden (mocha se carga solo, desde
+`node_modules/mocha`):
+
+<!--lang:en--]
+
+Runs the [mocha](https://mochajs.org/) tests in real browsers (Chrome and Firefox)
+in headless mode and without drivers: _server4test_ generates a page that loads mocha
+and the listed files, launches the browser pointing to that page and waits for the page
+to send the result with a POST.
+
+It is configured with the list of files to load, in order (mocha is loaded automatically,
+from `node_modules/mocha`):
+
+[!--lang:*-->
+
+```yaml
+server4test:
+  browser-test:
+    files:
+      - node_modules/require-bro/lib/require-bro.js
+      - node_modules/expect.js/index.js
+      - my-lib.js
+      - test/test.js
+    timeout: 120000 # ms waiting for the results of each browser (default 120000)
+```
+
+<!--lang:es-->
+
+Para correrlos y terminar (con código de salida 0 si todo anduvo bien y 1 si no):
+
+<!--lang:en--]
+
+To run them and exit (with exit code 0 if all is ok and 1 otherwise):
+
+[!--lang:*-->
+
+```sh
+server4test --run-browser chrome,firefox
+```
+
+<!--lang:es-->
+
+Cada navegador corre por separado, con un perfil temporal, y el servidor usa un puerto
+libre. Se muestra la salida de `console` de la página, los errores y los tests fallidos.
+La corrida falla si falla algún test, si hay errores al cargar o ejecutar los archivos,
+si no se corrió ningún test, si se vence el `timeout` o si el navegador termina antes de
+mandar el resultado.
+
+El navegador se busca en las variables de ambiente `CHROME_BIN` y `FIREFOX_BIN` y, si no
+están, en los lugares habituales de cada sistema operativo. Los _runners_ `ubuntu` de
+GitHub Actions ya traen Chrome y Firefox instalados.
+
+Corriendo `server4test` sin `--run-browser` la página queda disponible en
+`/server4test-browser-test` para abrirla a mano en cualquier navegador; el resultado se
+muestra en la consola del servidor.
+
+<!--lang:en--]
+
+Each browser runs separately, with a temporary profile, and the server uses a free port.
+The `console` output of the page, the errors and the failed tests are shown. The run
+fails if any test fails, if there are errors loading or running the files, if no test
+was run, if the `timeout` expires or if the browser exits before sending the result.
+
+The browser is searched in the environment variables `CHROME_BIN` and `FIREFOX_BIN` and,
+if they are not set, in the usual places of each operating system. The `ubuntu` runners
+of GitHub Actions already have Chrome and Firefox installed.
+
+Running `server4test` without `--run-browser` the page is available at
+`/server4test-browser-test` to open it manually in any browser; the result is shown in
+the server console.
 
 [!--lang:es-->
 

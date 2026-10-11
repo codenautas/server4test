@@ -33,15 +33,21 @@
     "express": "^5.2.1",
     "fs-extra": "^11.4.0",
     "serve-index": "^1.9.2",
-    "typescript": "^5.7.2",
-    "webpack": "^5.109.2",
-    "webpack-dev-middleware": "^8.1.0",
     "best-globals": "^2.2.2",
     "cast-error": "^0.1.5",
     "mini-tools": "^1.13.10",
     "serve-content": "^1.0.5"
   },
+  "peerDependencies": {
+    "webpack": "^5.109.2",
+    "webpack-dev-middleware": "^8.1.0"
+  },
+  "peerDependenciesMeta": {
+    "webpack": { "optional": true },
+    "webpack-dev-middleware": { "optional": true }
+  },
   "devDependencies": {
+    "typescript": "^5.7.2",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/fs-extra": "^11.0.4",

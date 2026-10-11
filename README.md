@@ -169,6 +169,14 @@ through [webpack-dev-middleware](https://www.npmjs.com/package/webpack-dev-middl
 (by default under `/dist`).
 
 
+Since version 2.0 `webpack` and `webpack-dev-middleware` are optional dependencies
+(`peerDependencies`), so to use `webpack.config.js` they must be installed in the project:
+
+
+```sh
+npm install --save-dev webpack webpack-dev-middleware
+```
+
 # local-file-repo
 
 
@@ -189,6 +197,52 @@ is sanitized (any character outside `-A-Za-z_0-9.@` is replaced by `_`), so the
 store is flat and cannot escape the directory. A random delay of up to
 `local-file-repo.delay` milliseconds is added to each response, to make the
 asynchrony visible while testing.
+
+
+# browser-test
+
+
+Runs the [mocha](https://mochajs.org/) tests in real browsers (Chrome and Firefox)
+in headless mode and without drivers: _server4test_ generates a page that loads mocha
+and the listed files, launches the browser pointing to that page and waits for the page
+to send the result with a POST.
+
+It is configured with the list of files to load, in order (mocha is loaded automatically,
+from `node_modules/mocha`):
+
+
+```yaml
+server4test:
+  browser-test:
+    files:
+      - node_modules/require-bro/lib/require-bro.js
+      - node_modules/expect.js/index.js
+      - my-lib.js
+      - test/test.js
+    timeout: 120000 # ms waiting for the results of each browser (default 120000)
+```
+
+
+To run them and exit (with exit code 0 if all is ok and 1 otherwise):
+
+
+```sh
+server4test --run-browser chrome,firefox
+```
+
+
+Each browser runs separately, with a temporary profile, and the server uses a free port.
+The `console` output of the page, the errors and the failed tests are shown. The run
+fails if any test fails, if there are errors loading or running the files, if no test
+was run, if the `timeout` expires or if the browser exits before sending the result.
+
+The browser is searched in the environment variables `CHROME_BIN` and `FIREFOX_BIN` and,
+if they are not set, in the usual places of each operating system. The `ubuntu` runners
+of GitHub Actions already have Chrome and Firefox installed.
+
+Running `server4test` without `--run-browser` the page is available at
+`/server4test-browser-test` to open it manually in any browser; the result is shown in
+the server console.
 
 
 # using it as a library
@@ -215,3 +269,4 @@ launch({serverClass:ExampleServer, server4test:{port:3339, verbose:true}})
 
 Each service is `{path, method?}` plus either `html` (served as html) or
 `middleware` (an express middleware). The default `method` is `use`.
+
