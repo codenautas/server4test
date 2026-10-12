@@ -30,13 +30,13 @@
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
-    "express": "^5.2.1",
-    "fs-extra": "^11.4.0",
+    "express": "^5.3.0",
+    "fs-extra": "^11.4.1",
     "serve-index": "^1.9.2",
-    "best-globals": "^2.2.2",
+    "best-globals": "^2.2.3",
     "cast-error": "^0.1.5",
     "mini-tools": "^1.13.10",
-    "serve-content": "^1.0.5"
+    "serve-content": "^1.0.6"
   },
   "peerDependencies": {
     "webpack": "^5.109.2",
@@ -56,15 +56,15 @@
     "@types/express": "^5.0.6",
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.6.5",
     "@types/serve-index": "^1.9.4",
     "es5-shim": "^4.6.7",
     "fetch-ie8": "^1.5.0",
-    "mocha": "^12.0.0-rc.5",
+    "mocha": "^12.0.3",
     "whatwg-fetch": "^3.6.20",
-    "qa-control": "^0.9.1",
-    "require-bro": "^0.3.6",
-    "types.d.ts": "^0.6.22",
+    "qa-control": "^0.12.2",
+    "require-bro": "^0.4.1",
+    "types.d.ts": "^0.7.1",
     "mixin-patch": "^1.0.0-rc.3"
   },
   "engines": {

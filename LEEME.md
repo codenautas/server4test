@@ -15,7 +15,6 @@ server for test
 [![downloads](https://img.shields.io/npm/dm/server4test.svg)](https://npmjs.org/package/server4test)
 [![linux](https://github.com/codenautas/server4test/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/codenautas/server4test/actions/workflows/build-and-test.yml)
 [![windows](https://ci.appveyor.com/api/projects/status/github/codenautas/server4test?svg=true)](https://ci.appveyor.com/project/codenautas/server4test)
-[![security](https://socket.dev/api/badge/npm/package/server4test)](https://socket.dev/npm/package/server4test)
 [![qa-control](https://github.com/codenautas/server4test/actions/workflows/qa-control.yml/badge.svg)](https://github.com/codenautas/server4test/actions/workflows/qa-control.yml)
 
 <!--multilang buttons-->
@@ -458,6 +457,46 @@ the server console.
 
 An image (or another resource that is not a file of the list) that can not be loaded is
 shown as a warning, it does not make the run fail.
+
+[!--lang:es-->
+
+## assert
+
+<!--lang:en--]
+
+## assert
+
+[!--lang:es-->
+
+Para los tests que usan el módulo `assert` de node, _server4test_ sirve un reemplazo para el
+navegador con las funciones básicas (`assert()`, `ok`, `equal`, `notEqual`, `strictEqual`,
+`notStrictEqual`, `deepEqual`, `notDeepEqual`, `deepStrictEqual`, `notDeepStrictEqual`, `throws`,
+`fail` y el modo `assert.strict`). Las comparaciones profundas abarcan primitivos, arrays, las claves propias de los
+objetos, `Date`, `RegExp` y el `name`/`message` de los `Error`; con `Map`, `Set` o arreglos
+tipados dan error (no están soportados). Se agrega a la lista de archivos y define
+`window.assert`, así que con _require-bro_ `require('assert')` lo encuentra:
+
+<!--lang:en--]
+
+For the tests that use the node module `assert`, _server4test_ serves a replacement for the
+browser with the basic functions (`assert()`, `ok`, `equal`, `notEqual`, `strictEqual`,
+`notStrictEqual`, `deepEqual`, `notDeepEqual`, `deepStrictEqual`, `notDeepStrictEqual`, `throws`,
+`fail` and the `assert.strict` mode). The deep comparisons cover primitives, arrays, the own keys of the objects, `Date`,
+`RegExp` and the `name`/`message` of the `Error`s; with `Map`, `Set` or typed arrays they throw
+an error (not supported). It is added to the list of files and it defines `window.assert`, so
+with _require-bro_ `require('assert')` finds it:
+
+[!--lang:*-->
+
+```yaml
+server4test:
+  browser-test:
+    files:
+      - node_modules/require-bro/lib/require-bro.js
+      - server4test-browser-assert.js
+      - my-lib.js
+      - test/test.js
+```
 
 [!--lang:es-->
 
