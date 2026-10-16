@@ -15,6 +15,8 @@ server for test
 [![downloads](https://img.shields.io/npm/dm/server4test.svg)](https://npmjs.org/package/server4test)
 [![linux](https://github.com/codenautas/server4test/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/codenautas/server4test/actions/workflows/build-and-test.yml)
 [![windows](https://ci.appveyor.com/api/projects/status/github/codenautas/server4test?svg=true)](https://ci.appveyor.com/project/codenautas/server4test)
+[![coverage](https://img.shields.io/coveralls/codenautas/server4test/master.svg)](https://coveralls.io/r/codenautas/server4test)
+[![sonar](https://sonarcloud.io/api/project_badges/measure?project=codenautas_server4test&metric=alert_status)](https://sonarcloud.io/summary/overall?id=codenautas_server4test)
 [![qa-control](https://github.com/codenautas/server4test/actions/workflows/qa-control.yml/badge.svg)](https://github.com/codenautas/server4test/actions/workflows/qa-control.yml)
 
 <!--multilang buttons-->

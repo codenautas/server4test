@@ -28,7 +28,7 @@ describe("connected", function(){
     var port = 8088
     var path = "./example"
     before(async function(){
-        server = new Server4Test({...CONFIG_SUPER_INSECURE, port, "public-dir": path})
+        server = new Server4Test({...CONFIG_SUPER_INSECURE, port, "public-dir": path, echo: true, "local-file-repo": {...CONFIG_SUPER_INSECURE["local-file-repo"], delay: 1}})
         console.log("starting server")
         await server.start()
         console.log("server listeining in", port)
@@ -50,6 +50,39 @@ describe("connected", function(){
         assert.equal(status, 200);
         const content = await response.text();
         assert.equal(content.replace(/\r/,''),`This is one example\nin two lines.`)
+    })
+    it("lists the directory", async function(){
+        const response = await fetch(`http://localhost:${port}/?dir`);
+        assert.equal(response.status, 200);
+        const content = await response.text();
+        assert.match(content, /one-example\.txt/);
+    })
+    it("echoes the request", async function(){
+        const response = await fetch(`http://localhost:${port}/echo?one=1`);
+        assert.equal(response.status, 200);
+        const content = await response.text();
+        assert.match(content, /^<pre>query: \{\s*"one": "1"\s*\}/);
+        assert.match(content, /path: "\/echo"/);
+    })
+    it("writes, reads and deletes a file in the local-file-repo", async function(){
+        type RepoAnswer = {content?: string, timestamp: number};
+        var repoUrl = `http://localhost:${port}`;
+        var file = encodeURIComponent('sub/test-repo.txt');
+        const written = await fetch(`${repoUrl}/file-write?file=${file}&content=${encodeURIComponent('hello repo')}`);
+        assert.equal(written.status, 200);
+        assert.equal(typeof (await written.json() as RepoAnswer).timestamp, 'number');
+        assert.equal(await fs.readFile(Path.join('local-file-repo', 'sub_test-repo.txt'), 'utf8'), 'hello repo');
+        const read = await fetch(`${repoUrl}/file-read?file=${file}`);
+        assert.equal(read.status, 200);
+        assert.equal((await read.json() as RepoAnswer).content, 'hello repo');
+        const deleted = await fetch(`${repoUrl}/file-delete?file=${file}`);
+        assert.equal(deleted.status, 200);
+        const readDeleted = await fetch(`${repoUrl}/file-read?file=${file}`);
+        assert.equal(readDeleted.status, 404);
+    })
+    it("rejects a local-file-repo request without filename", async function(){
+        const response = await fetch(`http://localhost:${port}/file-read`);
+        assert.equal(response.status, 502);
     })
 })
 
@@ -210,5 +243,21 @@ describe("browser-test", function(){
     })
     it("rejects --run-browser without browser-test config", async function(){
         assert.equal(await runBrowsers(Server4Test, CONFIG_SUPER_INSECURE, 'chrome'), false);
+    })
+    it("rejects --run-browser without browser list", async function(){
+        assert.equal(await runBrowsers(Server4Test, {...CONFIG_SUPER_INSECURE, "browser-test": {files: []}}, undefined), false);
+    })
+    it("fails when the browser executable does not exist", async function(){
+        var previous = process.env.FIREFOX_BIN;
+        process.env.FIREFOX_BIN = Path.join('local-test', 'missing-firefox');
+        try{
+            await assert.rejects(runBrowsers(Server4Test, {...CONFIG_SUPER_INSECURE, "browser-test": {files: []}}, 'firefox'), /FIREFOX_BIN=.*missing-firefox does not exist/);
+        }finally{
+            if(previous == null){
+                delete process.env.FIREFOX_BIN;
+            }else{
+                process.env.FIREFOX_BIN = previous;
+            }
+        }
     })
 })

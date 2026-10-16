@@ -35,8 +35,8 @@
     "serve-index": "^1.9.2",
     "best-globals": "^2.2.3",
     "cast-error": "^0.1.5",
-    "mini-tools": "^1.13.10",
-    "serve-content": "^1.0.6"
+    "mini-tools": "^1.13.11",
+    "serve-content": "^1.0.7"
   },
   "peerDependencies": {
     "webpack": "^5.109.2",
@@ -64,8 +64,9 @@
     "whatwg-fetch": "^3.6.20",
     "qa-control": "^0.12.2",
     "require-bro": "^0.4.1",
-    "types.d.ts": "^0.7.1",
-    "mixin-patch": "^1.0.0-rc.3"
+    "types.d.ts": "^0.7.2",
+    "mixin-patch": "^1.0.0",
+    "c8": "^12.0.0"
   },
   "engines": {
     "node": ">= 20"
@@ -73,24 +74,23 @@
   "scripts": {
     "start": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js",
     "start-super-insecure": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js --super-insecure",
-    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
-    "test": "tsc -p test && mocha --report lcovonly -- --reporter spec --check-leaks local-test/test/",
+    "test-ci": "tsc -p test && c8 --reporter=lcov --reporter=text-summary --include=local-test/src/** mocha --reporter spec --check-leaks local-test/test/",
+    "test": "tsc -p test && mocha --reporter spec --check-leaks local-test/test/",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
     "prepublish": "npm run build",
     "build": "tsc && mixin-patch",
     "preversion": "npm test",
     "version": "npm run build",
-    "postversion": "git push && git push --tags",
     "mixin-patch": "mixin-patch"
   },
   "qa-control": {
-    "coverage": 0,
+    "coverage": 80,
     "run-in": "client",
     "type": "lib",
     "gha": "all",
     "test-appveyor": true,
-    "multilang": "yes"
+    "multilang": "yes",
+    "sonar": true
   },
   "mixin-patch": {
     "patch": [
