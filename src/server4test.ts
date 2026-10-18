@@ -203,18 +203,20 @@ export class Server4Test{
     localFileRepoMiddleware(
         fun:(filename:string, params:{content:string|null|undefined})=>Promise<{content?:string, timestamp?:number}>
     ){
+        var delay = Math.round(this.opts["local-file-repo"].delay ?? 100);
+        if(!(delay >= 0)) throw new Error('server4test: local-file-repo.delay must be a number >= 0');
         return async (req:Request, res:Response)=>{
             if(this.opts.verbose){
                 console.log(req.method, req.path, req.query);
             }
             try{
-                await sleep(randomInt(0, 1 + (this.opts["local-file-repo"].delay||100)));
+                await sleep(randomInt(0, 1 + delay));
                 if(typeof req.query.file !== "string") throw new Error('lack of filename');
                 if(req.query.content!=null && typeof req.query.content !== "string") throw new Error('invalid content format');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
                 var result = await fun(filename,{content:req.query.content as string});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
-                await sleep(randomInt(0, 1 + (this.opts["local-file-repo"].delay||100)));
+                await sleep(randomInt(0, 1 + delay));
                 res.send(JSON.stringify(data));
                 res.end();
             }catch(err){
