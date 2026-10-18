@@ -10,10 +10,12 @@ async function fetchAndShow(url:string, id:string):Promise<void>{
         element.style.color='red';
         console.log(err);
         element.textContent=err.message;
-    };
+    }
 }
 
 window.addEventListener('load', function(){
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- arranque de servicios web!
     fetchAndShow('/dummy1','dummy');
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- arranque de servicios web!
     fetchAndShow('/up-time','up-time');
 });

@@ -12,12 +12,5 @@ class ExampleServer extends Server4Test{
     }
 }
 
-/*
-var server = new ExampleServer({port:3339, verbose:true});
-
-server.start().then(function(){
-    console.log('try: http://localhost:3339/example/example.html');
-});
-*/
-
+// eslint-disable-next-line @typescript-eslint/no-floating-promises -- arranque del servidor ahí queda flotando
 launch({serverClass:ExampleServer, server4test:{port:3339, verbose:true}})

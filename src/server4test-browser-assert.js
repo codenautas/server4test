@@ -66,8 +66,8 @@
     var unsupportedClasses = ['Map', 'Set', 'WeakMap', 'WeakSet', 'ArrayBuffer', 'DataView', 'Int8Array', 'Uint8Array',
         'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array',
         'BigInt64Array', 'BigUint64Array'];
-    function deepEqual(actual, expected, strict, stack){
-        if(strict ? Object.is(actual, expected) : actual == expected || actual !== actual && expected !== expected) return true;
+    function deepEqual(actual, expected, strict, stack){ // eslint-disable-line complexity
+        if(strict ? Object.is(actual, expected) : actual == expected || actual !== actual && expected !== expected) return true; // eslint-disable-line eqeqeq, no-self-compare
         if(typeof actual !== 'object' || typeof expected !== 'object' || actual === null || expected === null) return false;
         if(strict && Object.getPrototypeOf(actual) !== Object.getPrototypeOf(expected)) return false;
         var actualClass = className(actual);
@@ -75,7 +75,7 @@
         if(unsupportedClasses.indexOf(actualClass) >= 0){
             throw new Error('server4test assert: deepEqual does not support ' + actualClass);
         }
-        if(actualClass === 'Date') return actual.getTime() === expected.getTime() || actual.getTime() !== actual.getTime() && expected.getTime() !== expected.getTime();
+        if(actualClass === 'Date') return actual.getTime() === expected.getTime() || actual.getTime() !== actual.getTime() && expected.getTime() !== expected.getTime(); // eslint-disable-line no-self-compare
         if(actualClass === 'RegExp') return String(actual) === String(expected);
         if(actualClass === 'Error' && (actual.name !== expected.name || actual.message !== expected.message)) return false;
         for(var i = 0; i < stack.length; i++){
@@ -96,10 +96,10 @@
     };
     assert.ok = assert;
     assert.equal = function equal(actual, expected, message){
-        check(actual == expected, message, actual, expected, '==');
+        check(actual == expected, message, actual, expected, '=='); // eslint-disable-line eqeqeq
     };
     assert.notEqual = function notEqual(actual, expected, message){
-        check(actual != expected, message, actual, expected, '!=');
+        check(actual != expected, message, actual, expected, '!='); // eslint-disable-line eqeqeq
     };
     assert.strictEqual = function strictEqual(actual, expected, message){
         check(Object.is(actual, expected), message, actual, expected, '===');

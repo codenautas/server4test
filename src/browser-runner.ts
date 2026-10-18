@@ -61,8 +61,8 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
     chrome: {
         envVar: 'CHROME_BIN',
         candidates: () =>
-            process.platform == 'win32' ? inProgramFiles('Google\\Chrome\\Application\\chrome.exe') :
-            process.platform == 'darwin' ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] :
+            process.platform === 'win32' ? inProgramFiles('Google\\Chrome\\Application\\chrome.exe') :
+            process.platform === 'darwin' ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] :
             inPath(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']),
         args: (profileDir, url) => [
             '--headless', '--user-data-dir=' + profileDir, '--no-first-run', '--no-default-browser-check',
@@ -72,8 +72,8 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
     firefox: {
         envVar: 'FIREFOX_BIN',
         candidates: () =>
-            process.platform == 'win32' ? inProgramFiles('Mozilla Firefox\\firefox.exe') :
-            process.platform == 'darwin' ? ['/Applications/Firefox.app/Contents/MacOS/firefox'] :
+            process.platform === 'win32' ? inProgramFiles('Mozilla Firefox\\firefox.exe') :
+            process.platform === 'darwin' ? ['/Applications/Firefox.app/Contents/MacOS/firefox'] :
             inPath(['firefox']),
         args: (profileDir, url) => ['-headless', '-no-remote', '-wait-for-browser', '-profile', profileDir, url]
     }
@@ -252,7 +252,7 @@ export async function saveBrowserTestCoverage(report: BrowserTestReport, label: 
 /** prints the report and returns true if all is ok */
 export function printBrowserTestReport(report: BrowserTestReport, label: string): boolean{
     console.log(`[${label}] ${report.userAgent}`);
-    report.console.forEach(line => console.log(`[${label}] ${line.level == 'log' ? '' : line.level + ': '}${line.text}`));
+    report.console.forEach(line => console.log(`[${label}] ${line.level === 'log' ? '' : line.level + ': '}${line.text}`));
     report.loadErrors.forEach(src => console.error(`[${label}] can not load: ${src}`));
     report.errors.forEach(error => console.error(`[${label}] error: ${error}`));
     report.failures.forEach((failure, i) => {
@@ -264,7 +264,7 @@ export function printBrowserTestReport(report: BrowserTestReport, label: string)
     });
     var ok = !report.loadErrors.length && !report.errors.length && !report.failures.length && report.tests > 0;
     console.log(`[${label}] ${ok ? 'OK' : 'FAILED'}: ${report.tests} tests, ${report.passes} passing, ${report.failures.length} failing, ${report.pending} pending`);
-    if(report.tests == 0){
+    if(report.tests === 0){
         console.error(`[${label}] no tests were run`);
     }
     return ok;

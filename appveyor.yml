@@ -24,5 +24,3 @@ test_script:
   - npm run test-ci
 
 version: "{build}"
-before_test:
-  - npm run build

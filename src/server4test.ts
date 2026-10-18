@@ -8,6 +8,7 @@ import * as fs           from 'fs-extra';
 import { existsSync }    from 'fs';
 import * as Path         from 'path';
 import {unexpected}      from 'cast-error';
+import {randomInt}       from 'crypto';
 import {
     BrowserTestOpts, BrowserTestReport, BROWSER_TEST_PAGE_PATH, BROWSER_TEST_RESULT_PATH,
     BROWSER_TEST_ASSERT_PATH, browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers, saveBrowserTestCoverage
@@ -99,7 +100,7 @@ export type Server4TestOpts={
 }
 
 var jadeTransformer = (serveContent.transformer[''] instanceof Array ? serveContent.transformer[''] : [serveContent.transformer['']]).find(
-    transformer => transformer.optionName == 'jade'
+    transformer => transformer.optionName === 'jade'
 );
 if(jadeTransformer == null){
     throw new Error("server4test: can not find the 'jade' transformer in serve-content");
@@ -116,14 +117,14 @@ export type ServiceDef = {
     method?:'get'|'post'|'delete'|'put'|'use'
 } & (
     {html:string}|
-    {middleware:(req:Request, res:Response, next?:NextFunction)=>any}
+    {middleware:(req:Request, res:Response, next?:NextFunction)=>any} // eslint-disable-line @typescript-eslint/no-explicit-any
 );
 
 export class Server4Test{
     app:express.Express;
     opts:Server4TestOpts;
     port:number=3000;
-    listener:any;
+    listener:any; // eslint-disable-line @typescript-eslint/no-explicit-any
     browserTestListeners = new Map<string, (report:BrowserTestReport)=>void>();
     constructor(opts:Partial<Server4TestOpts>){
         this.app = express();
@@ -153,7 +154,7 @@ export class Server4Test{
             if(serviceDef.path){
                 server.app[method](Path.posix.join(baseUrl,serviceDef.path), middleware);
             }else{
-                if(method=='use'){
+                if (method === 'use') {
                     server.app[method](middleware);
                 }
                 server.app[method](Path.posix.join(baseUrl,'/'),middleware);
@@ -176,14 +177,14 @@ export class Server4Test{
             });
         });
     }
-    webPackService(webPackOptions:any, webpackDevMiddlewareOptions?:any){
+    webPackService(webPackOptions:any, webpackDevMiddlewareOptions?:any){ // eslint-disable-line @typescript-eslint/no-explicit-any
         var webpack, middleware;
         try{
-            webpack = require('webpack');
-            middleware = require('webpack-dev-middleware');
+            webpack = require('webpack'); // eslint-disable-line global-require
+            middleware = require('webpack-dev-middleware'); // eslint-disable-line global-require
         }catch(err){
             var error = unexpected(err);
-            if(error.code=='MODULE_NOT_FOUND'){
+            if (error.code === 'MODULE_NOT_FOUND') {
                 throw new Error("server4test: webpack.config.js found but webpack and webpack-dev-middleware are optional and not installed. Use: npm install --save-dev webpack webpack-dev-middleware. "+error.message);
             }
             throw error;
@@ -207,19 +208,19 @@ export class Server4Test{
                 console.log(req.method, req.path, req.query);
             }
             try{
-                await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
+                await sleep(randomInt(0, 1 + (this.opts["local-file-repo"].delay||100)));
                 if(typeof req.query.file !== "string") throw new Error('lack of filename');
                 if(req.query.content!=null && typeof req.query.content !== "string") throw new Error('invalid content format');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
                 var result = await fun(filename,{content:req.query.content as string});
                 var data = {...result, timestamp:result.timestamp || (await fs.stat(filename)).mtimeMs}
-                await sleep(Math.random()*(this.opts["local-file-repo"].delay||100));
+                await sleep(randomInt(0, 1 + (this.opts["local-file-repo"].delay||100)));
                 res.send(JSON.stringify(data));
                 res.end();
             }catch(err){
                 var error = unexpected(err);
                 console.log(req.path, req.query, error);
-                res.statusCode=error.code=='ENOENT'?404:502;
+                res.statusCode = error.code === 'ENOENT' ? 404 : 502;
                 res.send('server error');
                 res.end();
             }
@@ -230,11 +231,11 @@ export class Server4Test{
             await fs.ensureDir(this.opts["local-file-repo"].directory);
         }catch(err){
             console.log("Can't ensureDir",this.opts["local-file-repo"].directory);
-            process.exit(1);
+            process.exit(1); // eslint-disable-line no-process-exit
         }
     }
     fileServices(){
-        this.launchEnsureDirOrDie();
+        this.launchEnsureDirOrDie(); // eslint-disable-line @typescript-eslint/no-floating-promises -- launching server
         return [
             {...this.opts["local-file-repo"].readRequest, middleware:this.localFileRepoMiddleware(async (filename:string)=>{
                 var content = await fs.readFile(filename, 'utf8')
@@ -257,7 +258,7 @@ export class Server4Test{
             if(this.opts.verbose){
                 console.log('using webpack.config.js')
             }
-            var options = require(Path.resolve('./webpack.config.js'));
+            var options = require(Path.resolve('./webpack.config.js')); // eslint-disable-line global-require
             services.push({path:'', middleware:this.webPackService(options)})
         }
         if(this.opts.echo){
@@ -322,8 +323,8 @@ export class Server4Test{
                                 res.status(500).send('can not save the coverage');
                             });
                         }
-                    }catch(err){
-                        console.error('server4test: invalid browser test report', err);
+                    } catch (err2) {
+                        console.error('server4test: invalid browser test report', err2);
                         res.status(400).send('invalid browser test report');
                     }
                 });
@@ -336,7 +337,7 @@ export class Server4Test{
             var theOrinigalEnd = res.end;
             // @ts-expect-error hacky replace
             res.end = function(chunk, encoding, cb){
-                if (typeof chunk == "string") {
+                if (typeof chunk === "string") {
                     chunk = chunk
                         .replace(/href="\/">~<\/a>/g, 'href="/?dir">~</a>')
                         .replace(/( \/ <a href="\/[^/<>"]+)(">)/g, '$1?dir$2')
@@ -347,7 +348,7 @@ export class Server4Test{
             if (req.query.dir !== undefined) {
                 serveIndex(path, server.opts["serve-index"])(req, res, next);
             } else {
-                next();
+                return next();
             }
         });
     }
@@ -374,7 +375,7 @@ export type LaunchOpts={
     server4test:Partial<Server4TestOpts>
 }
 
-export async function launch(opts?:Partial<LaunchOpts>){
+export async function launch(opts?:Partial<LaunchOpts>){ // eslint-disable-line complexity
     var config = await MiniTools.readConfig<LaunchOpts>([
         {
             serverClass: Server4Test,
@@ -391,7 +392,7 @@ export async function launch(opts?:Partial<LaunchOpts>){
         return;
     }
     var server = new ServerConstructor(config.server4test);
-    server.start();
+    server.start(); // eslint-disable-line @typescript-eslint/no-floating-promises -- launching server
     if(config.server4test.verbose){
         console.log('server4test-config');
         console.dir(config, {depth:6});

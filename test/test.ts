@@ -32,12 +32,6 @@ describe("connected", function(){
         console.log("server listeining in", port)
     })
     after(async function(){
-        if (false) {
-            this.timeout(600000)
-            console.log();
-            console.log("waiting in", process.cwd(), Path.join(process.cwd(), path))
-            await new Promise((resolve)=>setTimeout(resolve, 600000))
-        }
         console.log("closing server")
         await server.closeServer();
         console.log("server done")
@@ -93,7 +87,7 @@ describe("browser-test", function(){
         userAgent: 'test-agent', console: [{level: 'log', text: 'hello'}], loadErrors: [], errors: [],
         finished: true, tests: 2, passes: 2, pending: 0, failures: []
     }
-    var postReport = (report: unknown, runId: string) => fetch(`${baseUrl}${BROWSER_TEST_RESULT_PATH}?run=${runId}`, {
+    var postReport = async (report: unknown, runId: string) => fetch(`${baseUrl}${BROWSER_TEST_RESULT_PATH}?run=${runId}`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(report)

@@ -64,7 +64,7 @@ describe("browser assert", function(){
         browserAssert.throws(() => { throw new TypeError('wrong type'); }, TypeError);
         browserAssert.throws(() => { throw new TypeError('wrong type'); }, /^TypeError: wrong/);
         browserAssert.throws(() => { throw new TypeError('wrong type'); }, {name: 'TypeError', message: /wrong/});
-        browserAssert.throws(() => { throw new TypeError('wrong type'); }, (error: Error) => error.message == 'wrong type');
+        browserAssert.throws(() => { throw new TypeError('wrong type'); }, (error: Error) => error.message === 'wrong type');
         expectAssertionError(() => browserAssert.throws(() => undefined), 'Missing expected exception.');
         expectAssertionError(() => browserAssert.throws(() => undefined, 'must throw'), 'must throw');
         expectAssertionError(() => browserAssert.throws(() => { throw new Error('other'); }, TypeError), 'The error "Error: other" does not match the expected');
