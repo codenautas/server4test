@@ -1,7 +1,7 @@
 {
   "name": "server4test",
   "description": "server for test",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "files": [
     "lib"
   ],
@@ -92,7 +92,10 @@
     "multilang": "yes",
     "sonar": true,
     "silenced": [
-      ["eslint_warnings_in_file_1", "src/server4test-browser-assert.js"]
+      [
+        "eslint_warnings_in_file_1",
+        "src/server4test-browser-assert.js"
+      ]
     ]
   },
   "mixin-patch": {
@@ -100,8 +103,14 @@
       "lib/launch4test.js"
     ],
     "copy": [
-      {"from": "src", "to": "lib"},
-      {"from": "src", "to": "local-test/src"}
+      {
+        "from": "src",
+        "to": "lib"
+      },
+      {
+        "from": "src",
+        "to": "local-test/src"
+      }
     ]
   }
 }
