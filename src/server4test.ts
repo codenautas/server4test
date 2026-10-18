@@ -10,7 +10,7 @@ import * as Path         from 'path';
 import {unexpected}      from 'cast-error';
 import {
     BrowserTestOpts, BrowserTestReport, BROWSER_TEST_PAGE_PATH, BROWSER_TEST_RESULT_PATH,
-    BROWSER_TEST_ASSERT_PATH, BROWSER_TEST_ASSERT_SCRIPT, browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers, saveBrowserTestCoverage
+    BROWSER_TEST_ASSERT_PATH, browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers, saveBrowserTestCoverage
 } from './browser-runner';
 
 type RequestDefinition = {
@@ -296,7 +296,12 @@ export class Server4Test{
         return [
             {path:BROWSER_TEST_PAGE_PATH, method:'get', html:browserTestPage(this.opts["base-url"], browserTest)},
             {path:BROWSER_TEST_ASSERT_PATH, method:'get', middleware:(_req:Request, res:Response)=>{
-                res.type('application/javascript').send(BROWSER_TEST_ASSERT_SCRIPT);
+                res.type('application/javascript').sendFile(Path.join(__dirname, 'server4test-browser-assert.js'), (err?:Error)=>{
+                    if(err){
+                        console.error('server4test: can not send the browser assert', err);
+                        if(!res.headersSent) res.status(500).send('can not send the browser assert');
+                    }
+                });
             }},
             {path:BROWSER_TEST_RESULT_PATH, method:'post', middleware:(req:Request, res:Response)=>{
                 jsonParser(req, res, (err?:unknown)=>{

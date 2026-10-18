@@ -34,8 +34,8 @@
     "fs-extra": "^11.4.1",
     "serve-index": "^1.9.2",
     "best-globals": "^2.2.3",
-    "cast-error": "^0.1.5",
-    "mini-tools": "^1.13.11",
+    "cast-error": "^0.1.6",
+    "mini-tools": "^1.13.12",
     "serve-content": "^1.0.7"
   },
   "peerDependencies": {
@@ -62,10 +62,10 @@
     "fetch-ie8": "^1.5.0",
     "mocha": "^12.0.3",
     "whatwg-fetch": "^3.6.20",
-    "qa-control": "^0.12.2",
+    "qa-control": "^0.13.0",
     "require-bro": "^0.4.1",
     "types.d.ts": "^0.7.2",
-    "mixin-patch": "^1.0.0",
+    "mixin-patch": "^1.1.0",
     "c8": "^12.0.0"
   },
   "engines": {
@@ -74,8 +74,8 @@
   "scripts": {
     "start": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js",
     "start-super-insecure": "(mkdir local-file-store || echo 'using local-file-store') && node lib/launch4test.js --super-insecure",
-    "test-ci": "tsc -p test && c8 --reporter=lcov --reporter=text-summary --include=local-test/src/** mocha --reporter spec --check-leaks local-test/test/",
-    "test": "tsc -p test && mocha --reporter spec --check-leaks local-test/test/",
+    "test-ci": "tsc -p test && mixin-patch && c8 --reporter=lcov --reporter=text-summary --include=local-test/src/** mocha --reporter spec --check-leaks local-test/test/",
+    "test": "tsc -p test && mixin-patch && mocha --reporter spec --check-leaks local-test/test/",
     "example": "tsc -p example && node example/local-built/example/example-server.js",
     "prepublish": "npm run build",
     "build": "tsc && mixin-patch",
@@ -90,11 +90,18 @@
     "gha": "all",
     "test-appveyor": true,
     "multilang": "yes",
-    "sonar": true
+    "sonar": true,
+    "silenced": [
+      ["eslint_warnings_in_file_1", "src/server4test-browser-assert.js"]
+    ]
   },
   "mixin-patch": {
     "patch": [
       "lib/launch4test.js"
+    ],
+    "copy": [
+      {"from": "src", "to": "lib"},
+      {"from": "src", "to": "local-test/src"}
     ]
   }
 }
