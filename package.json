@@ -36,7 +36,7 @@
     "best-globals": "^2.2.3",
     "cast-error": "^0.1.6",
     "mini-tools": "^1.13.12",
-    "serve-content": "^1.0.7"
+    "serve-content": "^1.0.8"
   },
   "peerDependencies": {
     "webpack": "^5.109.2",
@@ -62,9 +62,9 @@
     "fetch-ie8": "^1.5.0",
     "mocha": "^12.0.3",
     "whatwg-fetch": "^3.6.20",
-    "qa-control": "^0.14.0",
+    "qa-control": "^0.14.1",
     "require-bro": "^0.4.1",
-    "types.d.ts": "^0.7.2",
+    "types.d.ts": "^0.7.3",
     "mixin-patch": "^1.1.0",
     "c8": "^12.0.0",
     "typescript-eslint": "^8.71.2"
