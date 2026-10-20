@@ -69,7 +69,7 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
         envVar: 'CHROME_BIN',
         candidates: () =>
             process.platform === 'win32' ? inProgramFiles(String.raw`Google\Chrome\Application\chrome.exe`) :
-            process.platform === 'darwin' ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] :
+            process.platform === 'darwin' ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] : // eslint-disable-line sonarjs/no-nested-conditional
             inPath(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']),
         args: (profileDir, url, show) => [
             ...(show ? [] : ['--headless']), '--user-data-dir=' + profileDir, '--no-first-run', '--no-default-browser-check',
@@ -80,7 +80,7 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
         envVar: 'FIREFOX_BIN',
         candidates: () =>
             process.platform === 'win32' ? inProgramFiles(String.raw`Mozilla Firefox\firefox.exe`) :
-            process.platform === 'darwin' ? ['/Applications/Firefox.app/Contents/MacOS/firefox'] :
+            process.platform === 'darwin' ? ['/Applications/Firefox.app/Contents/MacOS/firefox'] : // eslint-disable-line sonarjs/no-nested-conditional
             inPath(['firefox']),
         args: (profileDir, url, show) => [...(show ? [] : ['-headless']), '-no-remote', '-wait-for-browser', '-profile', profileDir, url]
     }
@@ -117,7 +117,7 @@ function jsonForScript(value: unknown): string{
 
 export function browserTestPage(baseUrl: string, browserTest: BrowserTestOpts): string{
     var url = (file: string) => escapeHtmlAttr(encodeURI(baseUrl + '/' + file.replace(/\\/g, '/').replace(/^\.?\//, '')));
-    return `<!doctype html>
+    return String.raw`<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -151,7 +151,7 @@ export function browserTestPage(baseUrl: string, browserTest: BrowserTestOpts): 
         }else if(target && target.tagName){
             report.console.push({level: 'warn', text: 'can not load ' + target.tagName.toLowerCase() + ': ' + (target.src || target.href)});
         }else{
-            report.errors.push((event.message || 'error') + ' at ' + event.filename + ':' + event.lineno + (event.error && event.error.stack ? '\\n' + event.error.stack : ''));
+            report.errors.push((event.message || 'error') + ' at ' + event.filename + ':' + event.lineno + (event.error && event.error.stack ? '\n' + event.error.stack : ''));
         }
     }, true);
 })();
@@ -221,7 +221,7 @@ function asStringArray(x: unknown, name: string): string[]{
 
 function asNumber(x: unknown, name: string): number{
     if(typeof x !== 'number'){
-        throw new Error(`server4test: invalid browser test report, ${name} must be a number`);
+        throw new Error(`server4test: invalid browser test report, ${name} must be a number`); // eslint-disable-line unicorn/prefer-type-error
     }
     return x;
 }
@@ -273,7 +273,7 @@ export function printBrowserTestReport(report: BrowserTestReport, label: string)
         console.error(`[${label}] ${i + 1}) ${failure.title}`);
         // some browsers (i.e. Firefox) do not include the message in the stack
         var detail = failure.stack == null ? failure.message :
-            failure.stack.includes(failure.message) ? failure.stack : failure.message + '\n' + failure.stack;
+            failure.stack.includes(failure.message) ? failure.stack : failure.message + '\n' + failure.stack; // eslint-disable-line sonarjs/no-nested-conditional
         console.error(`[${label}]    ${detail}`);
     });
     var ok = !report.loadErrors.length && !report.errors.length && !report.failures.length && report.tests > 0;

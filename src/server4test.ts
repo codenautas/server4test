@@ -99,7 +99,7 @@ export type Server4TestOpts={
     "browser-test"?:BrowserTestOpts
 }
 
-var jadeTransformer = (serveContent.transformer[''] instanceof Array ? serveContent.transformer[''] : [serveContent.transformer['']]).find(
+var jadeTransformer = (serveContent.transformer[''] instanceof Array ? serveContent.transformer[''] : [serveContent.transformer['']]).find( // eslint-disable-line unicorn/no-instanceof-builtins
     transformer => transformer.optionName === 'jade'
 );
 if(jadeTransformer == null){
@@ -132,7 +132,7 @@ export class Server4Test{
         this.app.use(cookieParser());
     }
     async start(): Promise<void>{
-        var server = this;
+        var server = this; // eslint-disable-line unicorn/no-this-assignment
         var baseUrl = this.opts["base-url"];
         var optsGenericForFiles=changing({
             allowedExts:['', 'js', 'html', 'css', 'jpg', 'jpeg', 'png', 'ico', 'gif', 'eot', 'svg', 'ttf', 'woff', 'woff2', 'appcache', 'jade', 'styl'],
@@ -153,7 +153,7 @@ export class Server4Test{
             var method = serviceDef.method||'use'
             server.app[method](Path.posix.join(baseUrl,serviceDef.path||'/'), middleware);
         });
-        var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"];
+        var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"]; // eslint-disable-line sonarjs/no-nested-conditional
         paths.forEach((path, i)=>{
             if(this.opts["server4test-directory"] && !i){
                 server.serveIndex4Test(baseUrl, path);
@@ -197,14 +197,14 @@ export class Server4Test{
         fun:(filename:string, params:{content:string|null|undefined})=>Promise<{content?:string, timestamp?:number}>
     ){
         var delay = Math.round(this.opts["local-file-repo"].delay ?? 100);
-        if(!(delay >= 0)) throw new Error('server4test: local-file-repo.delay must be a number >= 0');
+        if(!(delay >= 0)) throw new Error('server4test: local-file-repo.delay must be a number >= 0'); // eslint-disable-line sonarjs/no-inverted-boolean-check -- the negation also rejects NaN
         return async (req:Request, res:Response)=>{
             if(this.opts.verbose){
                 console.log(req.method, req.path, req.query);
             }
             try{
                 await sleep(randomInt(0, 1 + delay));
-                if(typeof req.query.file !== "string") throw new Error('lack of filename');
+                if(typeof req.query.file !== "string") throw new Error('lack of filename'); // eslint-disable-line unicorn/prefer-type-error
                 if(req.query.content!=null && typeof req.query.content !== "string") throw new Error('invalid content format');
                 var filename=Path.join(this.opts["local-file-repo"].directory,req.query.file.replace(/[^-A-Za-z_0-9.@]/g,'_'));
                 var result = await fun(filename,{content:req.query.content as string});
@@ -318,7 +318,7 @@ export class Server4Test{
                                 res.status(500).send('can not save the coverage');
                             });
                         }
-                    } catch (err2) {
+                    } catch (err2) { // eslint-disable-line unicorn/catch-error-name
                         console.error('server4test: invalid browser test report', err2);
                         res.status(400).send('invalid browser test report');
                     }
@@ -327,7 +327,7 @@ export class Server4Test{
         ];
     }
     serveIndex4Test(baseUrl:string, path:string){
-        var server = this;
+        var server = this; // eslint-disable-line unicorn/no-this-assignment
         server.app.use(baseUrl+'/', function(req, res, next){
             var theOrinigalEnd = res.end;
             // @ts-expect-error hacky replace
@@ -348,7 +348,7 @@ export class Server4Test{
         });
     }
     async closeServer():Promise<void>{
-        var server = this;
+        var server = this; // eslint-disable-line unicorn/no-this-assignment
         await new Promise<void>(function(resolve,reject){
             try{
                 server.listener.close(function(err:Error){
@@ -370,7 +370,7 @@ export type LaunchOpts={
     server4test:Partial<Server4TestOpts>
 }
 
-export async function launch(opts?:Partial<LaunchOpts>){ // eslint-disable-line complexity
+export async function launch(opts?:Partial<LaunchOpts>){ // eslint-disable-line complexity, sonarjs/cognitive-complexity
     var config = await MiniTools.readConfig<LaunchOpts>([
         {
             serverClass: Server4Test,
@@ -385,7 +385,7 @@ export async function launch(opts?:Partial<LaunchOpts>){ // eslint-disable-line 
     if(runBrowserIndex >= 0){
         var delayIndex = process.argv.indexOf('--delay');
         var delay = delayIndex >= 0 ? Number(process.argv[delayIndex+1]) : 0;
-        if(!(delay >= 0)){
+        if(!(delay >= 0)){ // eslint-disable-line sonarjs/no-inverted-boolean-check -- the negation also rejects NaN
             console.error('server4test: --delay needs the milliseconds to wait after each test, i.e.: --delay 500');
             process.exitCode = 1;
             return;

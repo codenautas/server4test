@@ -66,7 +66,7 @@
     var unsupportedClasses = ['Map', 'Set', 'WeakMap', 'WeakSet', 'ArrayBuffer', 'DataView', 'Int8Array', 'Uint8Array',
         'Uint8ClampedArray', 'Int16Array', 'Uint16Array', 'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array',
         'BigInt64Array', 'BigUint64Array'];
-    function deepEqual(actual, expected, strict, stack){ // eslint-disable-line complexity
+    function deepEqual(actual, expected, strict, stack){ // eslint-disable-line complexity, sonarjs/cognitive-complexity
         if(strict ? Object.is(actual, expected) : actual == expected || actual !== actual && expected !== expected) return true; // eslint-disable-line eqeqeq, no-self-compare
         if(typeof actual !== 'object' || typeof expected !== 'object' || actual === null || expected === null) return false;
         if(strict && Object.getPrototypeOf(actual) !== Object.getPrototypeOf(expected)) return false;
