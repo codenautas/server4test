@@ -168,3 +168,27 @@ describe("browser-test", function(){
         }
     })
 })
+
+describe("direct services", function(){
+    it("registers once a 'use' service without path", async function(){
+        var port = 8090;
+        var calls = 0;
+        class CountingServer extends Server4Test{
+            override directServices(){
+                return super.directServices().concat([
+                    {path:'', method:'use', middleware:(_req, _res, next) => { calls++; return next?.(); }},
+                    {path:'/counted', method:'get', middleware:(_req, res) => { res.send('ok'); }},
+                ]);
+            }
+        }
+        var server = new CountingServer({...CONFIG_SUPER_INSECURE, port, "public-dir": "./example", "local-file-repo": {...CONFIG_SUPER_INSECURE["local-file-repo"], enabled: false}});
+        await server.start();
+        try{
+            const response = await fetch(`http://localhost:${port}/counted`);
+            assert.equal(await response.text(), 'ok');
+            assert.equal(calls, 1);
+        }finally{
+            await server.closeServer();
+        }
+    })
+})

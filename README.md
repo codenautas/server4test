@@ -231,6 +231,7 @@ To run them and exit (with exit code 0 if all is ok and 1 otherwise):
 
 ```sh
 server4test --run-browser chrome,firefox
+server4test --run-browser chrome --show --delay 500
 ```
 
 
@@ -249,6 +250,11 @@ the server console.
 
 An image (or another resource that is not a file of the list) that can not be loaded is
 shown as a warning, it does not make the run fail.
+
+To watch a run on a local machine, `--show` opens the browsers visible and, when finished,
+waits for each one to be closed (no `timeout`); `--delay <ms>` waits that many milliseconds
+after each test. `--delay` also works on the page opened manually, adding `?delay=<ms>` to
+the URL.
 
 
 ## assert

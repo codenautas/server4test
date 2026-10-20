@@ -41,7 +41,14 @@ export type BrowserName = 'chrome' | 'firefox';
 type BrowserDef = {
     envVar: string
     candidates: () => string[]
-    args: (profileDir: string, url: string) => string[]
+    args: (profileDir: string, url: string, show: boolean) => string[]
+}
+
+export type RunBrowsersOptions = {
+    /** visible browsers, left open until the user closes them (no timeout) */
+    show?: boolean
+    /** milliseconds to wait after each test */
+    delay?: number
 }
 
 function inProgramFiles(relativePath: string): string[]{
@@ -64,8 +71,8 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
             process.platform === 'win32' ? inProgramFiles('Google\\Chrome\\Application\\chrome.exe') :
             process.platform === 'darwin' ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] :
             inPath(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']),
-        args: (profileDir, url) => [
-            '--headless', '--user-data-dir=' + profileDir, '--no-first-run', '--no-default-browser-check',
+        args: (profileDir, url, show) => [
+            ...(show ? [] : ['--headless']), '--user-data-dir=' + profileDir, '--no-first-run', '--no-default-browser-check',
             '--disable-gpu', '--disable-extensions', url
         ]
     },
@@ -75,7 +82,7 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
             process.platform === 'win32' ? inProgramFiles('Mozilla Firefox\\firefox.exe') :
             process.platform === 'darwin' ? ['/Applications/Firefox.app/Contents/MacOS/firefox'] :
             inPath(['firefox']),
-        args: (profileDir, url) => ['-headless', '-no-remote', '-wait-for-browser', '-profile', profileDir, url]
+        args: (profileDir, url, show) => [...(show ? [] : ['-headless']), '-no-remote', '-wait-for-browser', '-profile', profileDir, url]
     }
 };
 
@@ -178,6 +185,13 @@ ${browserTest.files.map(file => /\.css$/i.test(file) ? `<link rel="stylesheet" h
     if(typeof mocha === 'undefined'){
         send();
         return;
+    }
+    var delay = Number(new URLSearchParams(location.search).get('delay')) || 0;
+    if(delay > 0){
+        afterEach(function(done){
+            this.timeout(delay + 2000);
+            setTimeout(done, delay);
+        });
     }
     var runner = mocha.run();
     runner.on('test end', function(){ report.tests++; });
@@ -285,20 +299,22 @@ async function stopProcess(child: ChildProcess): Promise<void>{
     });
 }
 
-async function runBrowser(server: Server4Test, baseUrl: string, browser: BrowserName, browserTest: BrowserTestOpts): Promise<boolean>{
+async function runBrowser(server: Server4Test, baseUrl: string, browser: BrowserName, browserTest: BrowserTestOpts, runOptions: RunBrowsersOptions): Promise<boolean>{
     var timeout = browserTest.timeout ?? BROWSER_TEST_TIMEOUT_DEFAULT;
+    var show = runOptions.show === true;
     var executable = findExecutable(browser);
     var profileDir = await fsp.mkdtemp(Path.join(os.tmpdir(), 'server4test-' + browser + '-'));
     var runId = browser + '-' + Date.now();
-    var url = baseUrl + BROWSER_TEST_PAGE_PATH + '?run=' + encodeURIComponent(runId);
+    var url = baseUrl + BROWSER_TEST_PAGE_PATH + '?run=' + encodeURIComponent(runId) + (runOptions.delay ? '&delay=' + runOptions.delay : '');
     var child: ChildProcess | null = null;
     var stderr = '';
     console.log(`[${browser}] ${executable} ${url}`);
     try{
-        var browserProcess = spawn(executable, BROWSERS[browser].args(profileDir, url), {stdio: ['ignore', 'ignore', 'pipe']});
+        var browserProcess = spawn(executable, BROWSERS[browser].args(profileDir, url, show), {stdio: ['ignore', 'ignore', 'pipe']});
         child = browserProcess;
+        var browserExit = new Promise<void>(resolve => { browserProcess.once('exit', () => resolve()); });
         var report = await new Promise<BrowserTestReport>((resolve, reject) => {
-            var timer = setTimeout(() => reject(new Error(`server4test: timeout (${timeout}ms) waiting for ${browser} results`)), timeout);
+            var timer = show ? undefined : setTimeout(() => reject(new Error(`server4test: timeout (${timeout}ms) waiting for ${browser} results`)), timeout);
             server.browserTestListeners.set(runId, (report) => {
                 clearTimeout(timer);
                 resolve(report);
@@ -316,7 +332,12 @@ async function runBrowser(server: Server4Test, baseUrl: string, browser: Browser
             });
         });
         await saveBrowserTestCoverage(report, browser, browserTest);
-        return printBrowserTestReport(report, browser);
+        var ok = printBrowserTestReport(report, browser);
+        if(show){
+            console.log(`[${browser}] close the browser to continue`);
+            await browserExit;
+        }
+        return ok;
     }catch(err){
         console.error(`[${browser}]`, err);
         if(stderr){
@@ -337,7 +358,7 @@ async function runBrowser(server: Server4Test, baseUrl: string, browser: Browser
 }
 
 /** runs the browser test in each browser (comma separated list), returns true if all is ok */
-export async function runBrowsers(ServerConstructor: typeof Server4Test, opts: Server4TestOpts, browserList: string | undefined): Promise<boolean>{
+export async function runBrowsers(ServerConstructor: typeof Server4Test, opts: Server4TestOpts, browserList: string | undefined, runOptions: RunBrowsersOptions = {}): Promise<boolean>{
     var browserTest = opts["browser-test"];
     if(browserTest == null){
         console.error('server4test: --run-browser needs "browser-test" in server4test-config');
@@ -363,7 +384,7 @@ export async function runBrowsers(ServerConstructor: typeof Server4Test, opts: S
         var baseUrl = 'http://localhost:' + address.port + opts["base-url"];
         var ok = true;
         for(var browser of browsers.filter(isBrowserName)){
-            ok = await runBrowser(server, baseUrl, browser, browserTest) && ok;
+            ok = await runBrowser(server, baseUrl, browser, browserTest, runOptions) && ok;
         }
         return ok;
     }finally{

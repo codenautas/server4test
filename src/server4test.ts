@@ -151,14 +151,7 @@ export class Server4Test{
                 MiniTools.serveText(serviceDef.html,'html')(req,res);
             };
             var method = serviceDef.method||'use'
-            if(serviceDef.path){
-                server.app[method](Path.posix.join(baseUrl,serviceDef.path), middleware);
-            }else{
-                if (method === 'use') {
-                    server.app[method](middleware);
-                }
-                server.app[method](Path.posix.join(baseUrl,'/'),middleware);
-            }
+            server.app[method](Path.posix.join(baseUrl,serviceDef.path||'/'), middleware);
         });
         var paths=this.opts["public-dir"] == null ? [process.cwd()] : typeof this.opts["public-dir"] === "string" ? [this.opts["public-dir"]] : this.opts["public-dir"];
         paths.forEach((path, i)=>{
@@ -390,7 +383,17 @@ export async function launch(opts?:Partial<LaunchOpts>){ // eslint-disable-line 
     var ServerConstructor = config.serverClass;
     var runBrowserIndex = process.argv.indexOf('--run-browser');
     if(runBrowserIndex >= 0){
-        process.exitCode = await runBrowsers(ServerConstructor, changing(CONFIG_DEFAULT, config.server4test), process.argv[runBrowserIndex+1]) ? 0 : 1;
+        var delayIndex = process.argv.indexOf('--delay');
+        var delay = delayIndex >= 0 ? Number(process.argv[delayIndex+1]) : 0;
+        if(!(delay >= 0)){
+            console.error('server4test: --delay needs the milliseconds to wait after each test, i.e.: --delay 500');
+            process.exitCode = 1;
+            return;
+        }
+        process.exitCode = await runBrowsers(ServerConstructor, changing(CONFIG_DEFAULT, config.server4test), process.argv[runBrowserIndex+1], {
+            show: process.argv.includes('--show'),
+            delay,
+        }) ? 0 : 1;
         return;
     }
     var server = new ServerConstructor(config.server4test);
