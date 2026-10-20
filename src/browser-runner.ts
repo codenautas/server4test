@@ -1,7 +1,7 @@
-import { spawn, ChildProcess } from 'child_process';
-import { existsSync, promises as fsp } from 'fs';
-import * as os   from 'os';
-import * as Path from 'path';
+import { spawn, ChildProcess } from 'node:child_process';
+import { existsSync, promises as fsp } from 'node:fs';
+import * as os   from 'node:os';
+import * as Path from 'node:path';
 import type { Server4Test, Server4TestOpts } from './server4test';
 
 export const BROWSER_TEST_PAGE_PATH = '/server4test-browser-test';
@@ -68,7 +68,7 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
     chrome: {
         envVar: 'CHROME_BIN',
         candidates: () =>
-            process.platform === 'win32' ? inProgramFiles('Google\\Chrome\\Application\\chrome.exe') :
+            process.platform === 'win32' ? inProgramFiles(String.raw`Google\Chrome\Application\chrome.exe`) :
             process.platform === 'darwin' ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'] :
             inPath(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']),
         args: (profileDir, url, show) => [
@@ -79,7 +79,7 @@ const BROWSERS: Record<BrowserName, BrowserDef> = {
     firefox: {
         envVar: 'FIREFOX_BIN',
         candidates: () =>
-            process.platform === 'win32' ? inProgramFiles('Mozilla Firefox\\firefox.exe') :
+            process.platform === 'win32' ? inProgramFiles(String.raw`Mozilla Firefox\firefox.exe`) :
             process.platform === 'darwin' ? ['/Applications/Firefox.app/Contents/MacOS/firefox'] :
             inPath(['firefox']),
         args: (profileDir, url, show) => [...(show ? [] : ['-headless']), '-no-remote', '-wait-for-browser', '-profile', profileDir, url]
@@ -112,7 +112,7 @@ function escapeHtmlAttr(text: string): string{
 }
 
 function jsonForScript(value: unknown): string{
-    return JSON.stringify(value).replace(/</g, '\\u003c');
+    return JSON.stringify(value).replace(/</g, String.raw`\u003c`);
 }
 
 export function browserTestPage(baseUrl: string, browserTest: BrowserTestOpts): string{

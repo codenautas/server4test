@@ -4,11 +4,11 @@ import { Server4Test, /*CONFIG_DEFAULT,*/ CONFIG_SUPER_INSECURE } from '../src/s
 
 import { BrowserTestReport, BROWSER_TEST_PAGE_PATH, BROWSER_TEST_RESULT_PATH, BROWSER_TEST_ASSERT_PATH, printBrowserTestReport, runBrowsers } from '../src/browser-runner';
 
-import * as Path from 'path';
+import * as Path from 'node:path';
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 
-import { promises as fs } from 'fs';
+import { promises as fs } from 'node:fs';
 
 // import {promises as fs} from 'fs'
 
@@ -22,9 +22,9 @@ function console_log<T>(x:T){
 if (!console_log) console.log('dummy');
 
 describe("connected", function(){
-    var server: Server4Test
-    var port = 8088
-    var path = "./example"
+    let server: Server4Test
+    const port = 8088
+    const path = "./example"
     before(async function(){
         server = new Server4Test({...CONFIG_SUPER_INSECURE, port, "public-dir": path, echo: true, "local-file-repo": {...CONFIG_SUPER_INSECURE["local-file-repo"], delay: 1}})
         console.log("starting server")
@@ -58,8 +58,8 @@ describe("connected", function(){
     })
     it("writes, reads and deletes a file in the local-file-repo", async function(){
         type RepoAnswer = {content?: string, timestamp: number};
-        var repoUrl = `http://localhost:${port}`;
-        var file = encodeURIComponent('sub/test-repo.txt');
+        const repoUrl = `http://localhost:${port}`;
+        const file = encodeURIComponent('sub/test-repo.txt');
         const written = await fetch(`${repoUrl}/file-write?file=${file}&content=${encodeURIComponent('hello repo')}`);
         assert.equal(written.status, 200);
         assert.equal(typeof (await written.json() as RepoAnswer).timestamp, 'number');
@@ -79,15 +79,15 @@ describe("connected", function(){
 })
 
 describe("browser-test", function(){
-    var server: Server4Test
-    var port = 8089
-    var baseUrl = `http://localhost:${port}`
-    var coverageDir = Path.join('local-test', 'coverage-test')
-    var validReport: BrowserTestReport = {
+    let server: Server4Test
+    const port = 8089
+    const baseUrl = `http://localhost:${port}`
+    const coverageDir = Path.join('local-test', 'coverage-test')
+    const validReport: BrowserTestReport = {
         userAgent: 'test-agent', console: [{level: 'log', text: 'hello'}], loadErrors: [], errors: [],
         finished: true, tests: 2, passes: 2, pending: 0, failures: []
     }
-    var postReport = async (report: unknown, runId: string) => fetch(`${baseUrl}${BROWSER_TEST_RESULT_PATH}?run=${runId}`, {
+    const postReport = async (report: unknown, runId: string) => fetch(`${baseUrl}${BROWSER_TEST_RESULT_PATH}?run=${runId}`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(report)
@@ -109,7 +109,7 @@ describe("browser-test", function(){
         assert.deepEqual(styles, ['/node_modules/mocha/mocha.css', '/example.css']);
     })
     it("delivers a valid report to the listener of the run", async function(){
-        var received: BrowserTestReport | null = null;
+        let received: BrowserTestReport | null = null;
         server.browserTestListeners.set('run-1', report => { received = report; });
         const response = await postReport(validReport, 'run-1');
         server.browserTestListeners.delete('run-1');
@@ -117,8 +117,8 @@ describe("browser-test", function(){
         assert.deepEqual(received, validReport);
     })
     it("saves the coverage of a report without listener", async function(){
-        var coverage = {'/lib/one.js': {path: '/lib/one.js', s: {'0': 1}}};
-        var coverageFile = Path.join(coverageDir, 'server4test-browser.json');
+        const coverage = {'/lib/one.js': {path: '/lib/one.js', s: {'0': 1}}};
+        const coverageFile = Path.join(coverageDir, 'server4test-browser.json');
         await fs.rm(coverageFile, {force: true});
         const response = await postReport({...validReport, coverage}, 'not-listened');
         assert.equal(response.status, 200);
@@ -155,7 +155,7 @@ describe("browser-test", function(){
         assert.equal(await runBrowsers(Server4Test, {...CONFIG_SUPER_INSECURE, "browser-test": {files: []}}, undefined), false);
     })
     it("fails when the browser executable does not exist", async function(){
-        var previous = process.env.FIREFOX_BIN;
+        const previous = process.env.FIREFOX_BIN;
         process.env.FIREFOX_BIN = Path.join('local-test', 'missing-firefox');
         try{
             await assert.rejects(runBrowsers(Server4Test, {...CONFIG_SUPER_INSECURE, "browser-test": {files: []}}, 'firefox'), /FIREFOX_BIN=.*missing-firefox does not exist/);
@@ -171,8 +171,8 @@ describe("browser-test", function(){
 
 describe("direct services", function(){
     it("registers once a 'use' service without path", async function(){
-        var port = 8090;
-        var calls = 0;
+        const port = 8090;
+        let calls = 0;
         class CountingServer extends Server4Test{
             override directServices(){
                 return super.directServices().concat([
@@ -181,7 +181,7 @@ describe("direct services", function(){
                 ]);
             }
         }
-        var server = new CountingServer({...CONFIG_SUPER_INSECURE, port, "public-dir": "./example", "local-file-repo": {...CONFIG_SUPER_INSECURE["local-file-repo"], enabled: false}});
+        const server = new CountingServer({...CONFIG_SUPER_INSECURE, port, "public-dir": "./example", "local-file-repo": {...CONFIG_SUPER_INSECURE["local-file-repo"], enabled: false}});
         await server.start();
         try{
             const response = await fetch(`http://localhost:${port}/counted`);

@@ -2,7 +2,7 @@
 
 import browserAssert = require('../src/server4test-browser-assert');
 
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 
 describe("browser assert", function(){
     var expectAssertionError = (fn: () => void, message: string) => assert.throws(fn, (error: Error) => {
@@ -19,7 +19,7 @@ describe("browser assert", function(){
     it("compares with == and ===", function(){
         browserAssert.equal('1', 1);
         browserAssert.notEqual(1, 2);
-        browserAssert.strictEqual(NaN, NaN);
+        browserAssert.strictEqual(Number.NaN, Number.NaN);
         browserAssert.notStrictEqual('1', 1);
         expectAssertionError(() => browserAssert.equal(1, 2), '1 == 2');
         expectAssertionError(() => browserAssert.notEqual('1', 1), '"1" != 1');
@@ -35,7 +35,7 @@ describe("browser assert", function(){
         browserAssert.deepEqual({a: [1, '2', {b: new Date(2020, 1, 1)}], r: /x/g}, {a: ['1', 2, {b: new Date(2020, 1, 1)}], r: /x/g});
         browserAssert.deepStrictEqual({a: [1, {b: null}], e: new Error('m')}, {a: [1, {b: null}], e: new Error('m')});
         browserAssert.deepStrictEqual(cyclic1, cyclic2);
-        browserAssert.deepStrictEqual([NaN], [NaN]);
+        browserAssert.deepStrictEqual([Number.NaN], [Number.NaN]);
         browserAssert.notDeepEqual({a: 1}, {a: 1, b: 2});
         browserAssert.notDeepStrictEqual({a: 1}, {a: '1'});
         browserAssert.notDeepStrictEqual([1], {0: 1});

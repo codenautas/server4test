@@ -5,10 +5,10 @@ import * as serveContent from 'serve-content';
 import * as serveIndex   from 'serve-index';
 import {changing, sleep} from 'best-globals';
 import * as fs           from 'fs-extra';
-import { existsSync }    from 'fs';
-import * as Path         from 'path';
+import { existsSync }    from 'node:fs';
+import * as Path         from 'node:path';
 import {unexpected}      from 'cast-error';
-import {randomInt}       from 'crypto';
+import {randomInt}       from 'node:crypto';
 import {
     BrowserTestOpts, BrowserTestReport, BROWSER_TEST_PAGE_PATH, BROWSER_TEST_RESULT_PATH,
     BROWSER_TEST_ASSERT_PATH, browserTestPage, parseBrowserTestReport, printBrowserTestReport, runBrowsers, saveBrowserTestCoverage
@@ -243,7 +243,7 @@ export class Server4Test{
             })},
             {...this.opts["local-file-repo"].deleteRequest, middleware:this.localFileRepoMiddleware(async (filename:string)=>{
                 await fs.remove(filename)
-                return {timestamp:new Date().getTime()};
+                return {timestamp:Date.now()};
             })},
         ]
     }
