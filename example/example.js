@@ -3,7 +3,7 @@
  *
  * @param {{id:string, nombre:string, fileName:string, path:string, sendContent?:(e:HTMLElement)=>string, getContent?:(e:HTMLElement, c:string)=>void}} params
  */
-async function accion(params){
+function accion(params){
     var {id, nombre, fileName, path, sendContent, getContent} = params
     var e=document.getElementById(id);
     var boton=document.getElementById(nombre);
@@ -11,7 +11,7 @@ async function accion(params){
     boton.onclick=async ()=>{
         var response = await fetch(path+'?file='+fileName+(sendContent ? '&content='+encodeURIComponent(sendContent(e.value)):''),{method:'GET'});
         var content = await response.json();
-        await cb(e, content.content && JSON.parse(content.content)); /* eslint-disable-line callback-return */
+        await getContent(e, content.content && JSON.parse(content.content)); /* eslint-disable-line callback-return */
         m.textContent = new Date(content.timestamp)
     }
 }

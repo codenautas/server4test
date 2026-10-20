@@ -87,7 +87,7 @@ describe("browser-test", function(){
         userAgent: 'test-agent', console: [{level: 'log', text: 'hello'}], loadErrors: [], errors: [],
         finished: true, tests: 2, passes: 2, pending: 0, failures: []
     }
-    const postReport = async (report: unknown, runId: string) => fetch(`${baseUrl}${BROWSER_TEST_RESULT_PATH}?run=${runId}`, {
+    const postReport = async (report: unknown, runId: string) => await fetch(`${baseUrl}${BROWSER_TEST_RESULT_PATH}?run=${runId}`, { // eslint-disable-line @typescript-eslint/return-await -- SonarQube S7503 requires an await
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(report)
