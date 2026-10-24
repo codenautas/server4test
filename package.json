@@ -34,9 +34,9 @@
     "fs-extra": "^11.4.1",
     "serve-index": "^1.9.2",
     "best-globals": "^2.2.3",
-    "cast-error": "^0.1.6",
-    "mini-tools": "^1.13.12",
-    "serve-content": "^1.0.8"
+    "cast-error": "^0.1.7",
+    "mini-tools": "^1.13.14",
+    "serve-content": "^1.0.9"
   },
   "peerDependencies": {
     "webpack": "^5.109.2",
@@ -62,14 +62,14 @@
     "fetch-ie8": "^1.5.0",
     "mocha": "^12.0.3",
     "whatwg-fetch": "^3.6.20",
-    "qa-control": "^0.14.1",
+    "qa-control": "^0.14.2",
     "require-bro": "^0.4.2",
     "types.d.ts": "^0.7.3",
-    "mixin-patch": "^1.1.0",
+    "mixin-patch": "^1.1.1",
     "c8": "^12.0.0",
     "typescript-eslint": "^8.72.0",
     "eslint-plugin-sonarjs": "^4.2.2",
-    "eslint-plugin-unicorn": "^78.0.0"
+    "eslint-plugin-unicorn": "^79.0.0"
   },
   "engines": {
     "node": ">= 20"

@@ -11,7 +11,7 @@ function accion(params){
     boton.onclick=async ()=>{
         var response = await fetch(path+'?file='+fileName+(sendContent ? '&content='+encodeURIComponent(sendContent(e.value)):''),{method:'GET'});
         var content = await response.json();
-        await getContent(e, content.content && JSON.parse(content.content)); /* eslint-disable-line callback-return */
+        await getContent(e, content.content && JSON.parse(content.content));
         m.textContent = new Date(content.timestamp)
     }
 }
